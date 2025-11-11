@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карты лояльности</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Мои карты лояльности</h1>
+        
+        <!-- Форма добавления карты -->
+        <div class="add-card-form">
+            <h2>Добавить карту</h2>
+            <input type="text" id="storeName" placeholder="Название магазина" required>
+            <input type="text" id="cardNumber" placeholder="Номер карты" required>
+            <input type="text" id="barcode" placeholder="Штрих-код (опционально)">
+            <button id="addCardBtn">Добавить карту</button>
+        </div>
+
+        <!-- Список карт -->
+        <div class="cards-list" id="cardsList">
+            <!-- Карты будут добавлены динамически -->
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
