@@ -13,6 +13,21 @@ body {
     margin: 0 auto;
 }
 
+.access-denied {
+    text-align: center;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.access-denied h1 {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
 .hidden {
     display: none !important;
 }
@@ -51,6 +66,7 @@ h2 {
     border-radius: 8px;
     cursor: pointer;
     width: 100%;
+    margin-bottom: 8px;
 }
 
 .danger-btn {
@@ -76,6 +92,7 @@ h2 {
     width: 32px;
     height: 32px;
     padding: 0;
+    z-index: 10;
 }
 
 .button-group {
@@ -85,6 +102,18 @@ h2 {
 }
 
 .button-group button {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+/* Кнопки резервного копирования */
+.backup-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.backup-buttons button {
     flex: 1;
     margin-bottom: 0;
 }
@@ -131,20 +160,26 @@ input[type="text"] {
     color: var(--tg-theme-hint-color, #999999);
 }
 
-/* Сканер */
+/* Сканер - ИСПРАВЛЕНО */
 #scanner-container {
     margin: 16px 0;
     position: relative;
     width: 100%;
     max-width: 400px;
+    max-height: 350px; /* Ограничение высоты */
     margin-left: auto;
     margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #video {
     width: 100%;
+    max-height: 300px; /* Ограничение высоты видео */
     border-radius: 8px;
     background-color: #000000;
+    object-fit: cover; /* Обрезка с сохранением пропорций */
 }
 
 /* Отображение штрихкода */
@@ -192,7 +227,13 @@ input[type="text"] {
     font-size: 16px;
 }
 
+/* Экран просмотра карты - ИСПРАВЛЕНО */
 #view-screen {
     position: relative;
     padding-top: 48px;
+    min-height: 300px; /* Убрали 100vh */
+}
+
+#view-screen #back-btn {
+    margin-top: 24px; /* Увеличен отступ */
 }
