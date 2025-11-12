@@ -5,405 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Карты лояльности</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.4/dist/quagga.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            padding: 16px;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-        
-        h1 {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        
-        .add-card-section {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 24px;
-        }
-        
-        .input-group {
-            margin-bottom: 12px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 4px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--tg-theme-hint-color, #999);
-            border-radius: 8px;
-            font-size: 16px;
-            background: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-        }
-        
-        button {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 8px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-        
-        button:active {
-            opacity: 0.7;
-        }
-        
-        .btn-primary {
-            background: var(--tg-theme-button-color, #3390ec);
-            color: var(--tg-theme-button-text-color, #ffffff);
-        }
-        
-        .btn-secondary {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            color: var(--tg-theme-text-color, #000000);
-        }
-        
-        .cards-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .card-item {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 12px;
-            padding: 16px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        
-        .card-item:active {
-            transform: scale(0.98);
-        }
-        
-        .card-name {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .card-barcode {
-            font-size: 14px;
-            color: var(--tg-theme-hint-color, #999);
-        }
-        
-        .delete-btn {
-            margin-top: 8px;
-            background: #ff3b30;
-            color: white;
-            padding: 8px;
-            font-size: 14px;
-        }
-        
-        #scanner-container {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 1000;
-            padding: 16px;
-        }
-        
-        #scanner-container.active {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        #camera {
-            width: 100%;
-            max-width: 400px;
-            height: 300px;
-            position: relative;
-            overflow: hidden;
-            border-radius: 12px;
-        }
-        
-        #camera video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .scanner-text {
-            color: white;
-            margin: 16px 0;
-            text-align: center;
-        }
-        
-        #barcode-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        #barcode-modal.active {
-            display: flex;
-        }
-        
-        .modal-content {
-            background: var(--tg-theme-bg-color, #ffffff);
-            border-radius: 12px;
-            padding: 24px;
-            text-align: center;
-            max-width: 90%;
-        }
-        
-        #barcode-display {
-            margin: 20px 0;
-        }
-        
-        .barcode-text {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--tg-theme-hint-color, #999);
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="header">
-        <h1>🎫 Карты лояльности</h1>
-    </div>
-
-    <div class="add-card-section">
-        <div class="input-group">
-            <label for="card-name">Название магазина</label>
-            <input type="text" id="card-name" placeholder="Например: Пятёрочка">
+    <div id="app">
+        <!-- Главный экран со списком карт -->
+        <div id="main-screen">
+            <h1>Мои карты лояльности</h1>
+            <button id="add-card-btn" class="primary-btn">+ Добавить карту</button>
+            <div id="cards-list"></div>
         </div>
-        
-        <div class="input-group">
-            <label for="card-barcode">Штрихкод</label>
-            <input type="text" id="card-barcode" placeholder="Введите или отсканируйте">
-        </div>
-        
-        <button class="btn-secondary" onclick="startScanner()">📷 Отсканировать штрихкод</button>
-        <button class="btn-primary" onclick="addCard()">➕ Добавить карту</button>
-    </div>
 
-    <div id="cards-container">
-        <div class="empty-state">
-            Пока нет сохранённых карт.<br>Добавьте первую!
+        <!-- Экран добавления карты -->
+        <div id="add-screen" class="hidden">
+            <h2>Добавить карту</h2>
+            <input type="text" id="card-name" placeholder="Название магазина" />
+            
+            <div id="scanner-container" class="hidden">
+                <video id="video" autoplay></video>
+                <canvas id="canvas" class="hidden"></canvas>
+            </div>
+            
+            <button id="scan-btn" class="primary-btn">Сканировать штрихкод</button>
+            <input type="text" id="barcode-input" placeholder="Или введите штрихкод вручную" />
+            
+            <div class="button-group">
+                <button id="save-card-btn" class="primary-btn">Сохранить</button>
+                <button id="cancel-add-btn" class="secondary-btn">Отмена</button>
+            </div>
         </div>
-    </div>
 
-    <!-- Scanner -->
-    <div id="scanner-container">
-        <div class="scanner-text">
-            <h2>Наведите камеру на штрихкод</h2>
-        </div>
-        <div id="camera"></div>
-        <button class="btn-secondary" style="margin-top: 16px; max-width: 400px;" onclick="stopScanner()">Отмена</button>
-    </div>
-
-    <!-- Barcode Display Modal -->
-    <div id="barcode-modal">
-        <div class="modal-content">
-            <h2 id="modal-card-name"></h2>
+        <!-- Экран просмотра карты -->
+        <div id="view-screen" class="hidden">
+            <button id="delete-card-btn" class="delete-btn">✕</button>
+            <h2 id="view-card-name"></h2>
             <div id="barcode-display"></div>
-            <div class="barcode-text" id="modal-barcode-text"></div>
-            <button class="btn-primary" onclick="closeModal()">Закрыть</button>
+        </div>
+
+        <!-- Модальное окно подтверждения удаления -->
+        <div id="confirm-modal" class="modal hidden">
+            <div class="modal-content">
+                <p>Вы уверены, что хотите удалить эту карту?</p>
+                <div class="button-group">
+                    <button id="confirm-delete-btn" class="danger-btn">Удалить</button>
+                    <button id="cancel-delete-btn" class="secondary-btn">Отмена</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script>
-        // Initialize Telegram WebApp
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-        
-        // Storage for cards
-        let cards = [];
-        
-        // Load cards from localStorage
-        function loadCards() {
-            const stored = localStorage.getItem('loyaltyCards');
-            if (stored) {
-                cards = JSON.parse(stored);
-                renderCards();
-            }
-        }
-        
-        // Save cards to localStorage
-        function saveCards() {
-            localStorage.setItem('loyaltyCards', JSON.stringify(cards));
-        }
-        
-        // Add new card
-        function addCard() {
-            const name = document.getElementById('card-name').value.trim();
-            const barcode = document.getElementById('card-barcode').value.trim();
-            
-            if (!name || !barcode) {
-                tg.showAlert('Пожалуйста, заполните все поля');
-                return;
-            }
-            
-            cards.push({ name, barcode, id: Date.now() });
-            saveCards();
-            renderCards();
-            
-            // Clear inputs
-            document.getElementById('card-name').value = '';
-            document.getElementById('card-barcode').value = '';
-            
-            tg.showAlert('Карта добавлена!');
-        }
-        
-        // Delete card
-        function deleteCard(id) {
-            cards = cards.filter(card => card.id !== id);
-            saveCards();
-            renderCards();
-        }
-        
-        // Show card barcode
-        function showCard(card) {
-            document.getElementById('modal-card-name').textContent = card.name;
-            document.getElementById('modal-barcode-text').textContent = card.barcode;
-            
-            // Generate barcode image using external service
-            const barcodeImg = document.createElement('img');
-            barcodeImg.src = `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(card.barcode)}&code=Code128&translate-esc=on`;
-            barcodeImg.style.maxWidth = '100%';
-            barcodeImg.alt = 'Barcode';
-            
-            const displayDiv = document.getElementById('barcode-display');
-            displayDiv.innerHTML = '';
-            displayDiv.appendChild(barcodeImg);
-            
-            document.getElementById('barcode-modal').classList.add('active');
-        }
-        
-        // Close modal
-        function closeModal() {
-            document.getElementById('barcode-modal').classList.remove('active');
-        }
-        
-        // Render cards list
-        function renderCards() {
-            const container = document.getElementById('cards-container');
-            
-            if (cards.length === 0) {
-                container.innerHTML = '<div class="empty-state">Пока нет сохранённых карт.<br>Добавьте первую!</div>';
-                return;
-            }
-            
-            container.innerHTML = '<div class="cards-list"></div>';
-            const listDiv = container.querySelector('.cards-list');
-            
-            cards.forEach(card => {
-                const cardDiv = document.createElement('div');
-                cardDiv.className = 'card-item';
-                cardDiv.innerHTML = `
-                    <div onclick="showCard(${JSON.stringify(card).replace(/"/g, '&quot;')})">
-                        <div class="card-name">${card.name}</div>
-                        <div class="card-barcode">🔢 ${card.barcode}</div>
-                    </div>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteCard(${card.id})">🗑 Удалить</button>
-                `;
-                listDiv.appendChild(cardDiv);
-            });
-        }
-        
-        // Barcode scanner
-        let scannerActive = false;
-        
-        function startScanner() {
-            document.getElementById('scanner-container').classList.add('active');
-            scannerActive = true;
-            
-            Quagga.init({
-                inputStream: {
-                    type: "LiveStream",
-                    target: document.querySelector('#camera'),
-                    constraints: {
-                        facingMode: "environment"
-                    }
-                },
-                decoder: {
-                    readers: [
-                        "code_128_reader",
-                        "ean_reader",
-                        "ean_8_reader",
-                        "code_39_reader",
-                        "code_39_vin_reader",
-                        "codabar_reader",
-                        "upc_reader",
-                        "upc_e_reader",
-                        "i2of5_reader"
-                    ]
-                }
-            }, function(err) {
-                if (err) {
-                    console.error(err);
-                    tg.showAlert('Ошибка доступа к камере');
-                    stopScanner();
-                    return;
-                }
-                Quagga.start();
-            });
-            
-            Quagga.onDetected(function(result) {
-                if (scannerActive && result.codeResult.code) {
-                    const barcode = result.codeResult.code;
-                    document.getElementById('card-barcode').value = barcode;
-                    stopScanner();
-                    tg.showAlert('Штрихкод отсканирован!');
-                }
-            });
-        }
-        
-        function stopScanner() {
-            scannerActive = false;
-            document.getElementById('scanner-container').classList.remove('active');
-            Quagga.stop();
-        }
-        
-        // Initialize app
-        loadCards();
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
