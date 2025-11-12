@@ -31,10 +31,19 @@
             <div id="cards-list"></div>
         </div>
 
-        <!-- Экран добавления карты -->
+        <!-- Экран добавления/редактирования карты -->
         <div id="add-screen" class="hidden">
-            <h2>Добавить карту</h2>
+            <h2 id="add-screen-title">Добавить карту</h2>
             <input type="text" id="card-name" placeholder="Название магазина" />
+            
+            <!-- Выбор цвета обложки -->
+            <div class="color-picker-section">
+                <label for="card-color">Цвет обложки карты:</label>
+                <div class="color-picker-container">
+                    <input type="color" id="card-color" value="#3390ec" />
+                    <div class="color-preview" id="color-preview"></div>
+                </div>
+            </div>
             
             <div id="scanner-container" class="hidden">
                 <video id="video" autoplay playsinline muted></video>
@@ -53,6 +62,7 @@
 
         <!-- Экран просмотра карты -->
         <div id="view-screen" class="hidden">
+            <button id="edit-card-btn" class="edit-btn" title="Редактировать">✏️</button>
             <button id="delete-card-btn" class="delete-btn" title="Удалить карту">✕</button>
             <h2 id="view-card-name"></h2>
             <div id="barcode-display"></div>
