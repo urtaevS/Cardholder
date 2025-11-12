@@ -2,18 +2,32 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Карты лояльности</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Экран отказа в доступе -->
+    <div id="access-denied" class="access-denied hidden">
+        <h1>🔒 Доступ запрещён</h1>
+        <p>Это приложение доступно только владельцу.</p>
+    </div>
+
+    <!-- Основное приложение -->
     <div id="app">
         <!-- Главный экран со списком карт -->
         <div id="main-screen">
-            <h1>Мои карты лояльности</h1>
-            <button id="add-card-btn" class="primary-btn">+ Добавить карту</button>
+            <h1>🎫 Мои карты лояльности</h1>
+            
+            <!-- Кнопки резервного копирования -->
+            <div class="backup-buttons">
+                <button id="export-btn" class="secondary-btn">📥 Экспорт</button>
+                <button id="import-btn" class="secondary-btn">📤 Импорт</button>
+            </div>
+            
+            <button id="add-card-btn" class="primary-btn">➕ Добавить карту</button>
             <div id="cards-list"></div>
         </div>
 
@@ -23,11 +37,12 @@
             <input type="text" id="card-name" placeholder="Название магазина" />
             
             <div id="scanner-container" class="hidden">
-                <video id="video" autoplay></video>
+                <video id="video" autoplay playsinline muted></video>
                 <canvas id="canvas" class="hidden"></canvas>
+                <p class="scanner-hint">Наведите камеру на штрихкод</p>
             </div>
             
-            <button id="scan-btn" class="primary-btn">Сканировать штрихкод</button>
+            <button id="scan-btn" class="secondary-btn">📷 Сканировать штрихкод</button>
             <input type="text" id="barcode-input" placeholder="Или введите штрихкод вручную" />
             
             <div class="button-group">
@@ -38,9 +53,10 @@
 
         <!-- Экран просмотра карты -->
         <div id="view-screen" class="hidden">
-            <button id="delete-card-btn" class="delete-btn">✕</button>
+            <button id="delete-card-btn" class="delete-btn" title="Удалить карту">✕</button>
             <h2 id="view-card-name"></h2>
             <div id="barcode-display"></div>
+            <button id="back-btn" class="primary-btn">← Назад</button>
         </div>
 
         <!-- Модальное окно подтверждения удаления -->
@@ -56,6 +72,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
