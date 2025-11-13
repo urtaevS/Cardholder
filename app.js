@@ -12,7 +12,7 @@ function checkAccess() {
     const user = tg.initDataUnsafe?.user;
     
     // Для тестирования в браузере (закомментируйте в продакшене)
-    // if (!user) return true;
+    if (!user) return true;
     
     if (!user || !ALLOWED_USER_IDS.includes(user.id)) {
         document.getElementById('access-denied').classList.remove('hidden');
