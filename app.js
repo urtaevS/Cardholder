@@ -1,11 +1,13 @@
 // Инициализация Telegram WebApp
 const tg = window.Telegram.WebApp;
 tg.expand();
-tg.enableClosingConfirmation();
+
+// ИСПРАВЛЕНО: Отключаем подтверждение закрытия (было enableClosingConfirmation())
+tg.disableClosingConfirmation();
 
 // ===== НАСТРОЙКА ДОСТУПА =====
 const ALLOWED_USER_IDS = [
-    186757704    // ЗАМЕНИТЕ НА ВАШ ID!
+    123456789    // ЗАМЕНИТЕ НА ВАШ ID!
 ];
 
 function checkAccess() {
@@ -329,11 +331,18 @@ async function startScanning() {
         let errorMsg = 'Не удалось получить доступ к камере.';
         
         if (err.name === 'NotAllowedError') {
-            errorMsg = 'Доступ к камере запрещён.\n\nРазрешите в настройках:\nНастройки → Telegram → Разрешения → Камера';
+            errorMsg = 'Доступ к камере запрещён.
+
+Разрешите в настройках:
+Настройки → Telegram → Разрешения → Камера';
         } else if (err.name === 'NotFoundError') {
-            errorMsg = 'Камера не найдена на устройстве.\n\nПопробуйте загрузить фото штрихкода.';
+            errorMsg = 'Камера не найдена на устройстве.
+
+Попробуйте загрузить фото штрихкода.';
         } else if (err.name === 'NotReadableError') {
-            errorMsg = 'Камера занята другим приложением.\n\nЗакройте другие приложения и попробуйте снова.';
+            errorMsg = 'Камера занята другим приложением.
+
+Закройте другие приложения и попробуйте снова.';
         }
         
         tg.showAlert(errorMsg);
@@ -377,7 +386,7 @@ function tick() {
     requestAnimationFrame(tick);
 }
 
-// ===== НОВОЕ: ЗАГРУЗКА ФОТО ШТРИХКОДА =====
+// ===== ЗАГРУЗКА ФОТО ШТРИХКОДА =====
 uploadBarcodeBtn.addEventListener('click', () => {
     barcodeFileInput.click();
 });
@@ -411,7 +420,12 @@ barcodeFileInput.addEventListener('change', async (e) => {
                         navigator.vibrate(200);
                     }
                 } else {
-                    tg.showAlert('Штрихкод не найден на фото.\n\nУбедитесь, что:\n• Штрихкод чёткий и хорошо освещён\n• Весь штрихкод попадает в кадр\n• Фото не размыто');
+                    tg.showAlert('Штрихкод не найден на фото.
+
+Убедитесь, что:
+• Штрихкод чёткий и хорошо освещён
+• Весь штрихкод попадает в кадр
+• Фото не размыто');
                 }
                 
                 URL.revokeObjectURL(img.src);
