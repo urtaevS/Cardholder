@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Инициализация Telegram WebApp
     const tg = window.Telegram.WebApp;
     tg.expand();
-    tg.disableClosingConfirmation();
+    // tg.disableClosingConfirmation();
 
     // Глобальные переменные
     let cards = [];
