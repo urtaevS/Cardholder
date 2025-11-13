@@ -1,18 +1,18 @@
 // Инициализация Telegram WebApp
 const tg = window.Telegram.WebApp;
 tg.expand();
-// УДАЛЕНО: tg.enableClosingConfirmation(); — теперь без подтверждения
+tg.enableClosingConfirmation();
 
 // ===== НАСТРОЙКА ДОСТУПА =====
 const ALLOWED_USER_IDS = [
-    186757704    // ЗАМЕНИТЕ НА ВАШ ID!
+    123456789    // ЗАМЕНИТЕ НА ВАШ ID!
 ];
 
 function checkAccess() {
     const user = tg.initDataUnsafe?.user;
     
     // Для тестирования в браузере (закомментируйте в продакшене)
-    if (!user) return true;
+    // if (!user) return true;
     
     if (!user || !ALLOWED_USER_IDS.includes(user.id)) {
         document.getElementById('access-denied').classList.remove('hidden');
@@ -384,7 +384,7 @@ function tick() {
     requestAnimationFrame(tick);
 }
 
-// ===== ЗАГРУЗКА ФОТО ШТРИХКОДА =====
+// ===== НОВОЕ: ЗАГРУЗКА ФОТО ШТРИХКОДА =====
 uploadBarcodeBtn.addEventListener('click', () => {
     barcodeFileInput.click();
 });
@@ -515,7 +515,7 @@ importBtn.addEventListener('click', importCards);
 if (checkAccess()) {
     loadCards();
     
-    // Интеграция с Telegram BackButton (без подтверждения)
+    // Интеграция с Telegram BackButton
     tg.BackButton.onClick(() => {
         if (!mainScreen.classList.contains('hidden')) {
             tg.close();
