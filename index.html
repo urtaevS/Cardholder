@@ -10,85 +10,52 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="access-denied" class="access-denied hidden">
-        <h1>🔒 Доступ запрещён</h1>
-        <p>Это приложение доступно только владельцу.</p>
-    </div>
-
     <div id="app">
+        <!-- Главный экран -->
         <div id="main-screen">
             <h1>🎫 Мои карты лояльности</h1>
-            
-            <div class="search-section">
-                <input type="text" id="search-input" placeholder="🔍 Поиск по названию" />
-            </div>
-            
             <div class="backup-buttons">
                 <button id="export-btn" class="secondary-btn">📥 Экспорт</button>
                 <button id="import-btn" class="secondary-btn">📤 Импорт</button>
             </div>
-            
-            <button id="add-card-btn" class="primary-btn">➕ Добавить карту</button>
+            <button id="add-btn" class="primary-btn">➕ Добавить карту</button>
             <div id="cards-list"></div>
         </div>
 
+        <!-- Экран добавления/редактирования -->
         <div id="add-screen" class="hidden">
-            <h2 id="add-screen-title">Добавить карту</h2>
-            <input type="text" id="card-name" placeholder="Название магазина" />
-            
-            <div class="color-picker-section">
-                <label for="card-color">Цвет обложки карты:</label>
-                <div class="color-picker-container">
-                    <input type="color" id="card-color" value="#3390ec" />
-                    <div class="color-preview" id="color-preview"></div>
-                </div>
+            <h2 id="add-title">Добавить карту</h2>
+            <input type="text" id="name-input" placeholder="Название магазина" maxlength="50">
+            <div class="color-picker">
+                <label for="color-input">Цвет фона:</label>
+                <input type="color" id="color-input" value="#3390ec">
             </div>
-            
-            <div id="scanner-container" class="hidden">
+            <div id="scanner-container" class="hidden scanner-container">
                 <video id="video" autoplay playsinline muted></video>
-                <canvas id="canvas" class="hidden"></canvas>
-                <p class="scanner-hint">Наведите камеру на штрихкод</p>
+                <div class="scanner-hint">Наведите камеру на штрихкод</div>
             </div>
-            
+            <input type="text" id="barcode-input" placeholder="Или введите штрихкод вручную">
             <div class="scan-options">
                 <button id="scan-btn" class="secondary-btn">📷 Сканировать камерой</button>
-                <button id="upload-barcode-btn" class="secondary-btn">📁 Загрузить фото</button>
+                <button id="upload-btn" class="secondary-btn">📁 Загрузить фото</button>
             </div>
-            
-            <input type="file" id="barcode-file-input" accept="image/*" capture="environment" style="display: none;" />
-            <input type="text" id="barcode-input" placeholder="Или введите штрихкод вручную" />
-            
+            <input type="file" id="file-input" accept="image/*" capture="environment">
             <div class="button-group">
-                <button id="save-card-btn" class="primary-btn">Сохранить</button>
-                <button id="cancel-add-btn" class="secondary-btn">Отмена</button>
+                <button id="save-btn" class="primary-btn">Сохранить</button>
+                <button id="cancel-btn" class="secondary-btn">Отмена</button>
             </div>
         </div>
 
-        <div id="view-screen" class="hidden">
-            <button id="edit-card-btn" class="edit-btn" title="Редактировать">✏️</button>
-            <button id="delete-card-btn" class="delete-btn" title="Удалить">✕</button>
-            <h2 id="view-card-name"></h2>
-            <div id="barcode-display"></div>
+        <!-- Экран просмотра -->
+        <div id="view-screen" class="hidden view-screen">
+            <button id="edit-btn" class="edit-delete-btn edit-btn" title="Редактировать">✏️</button>
+            <button id="delete-btn" class="edit-delete-btn delete-btn" title="Удалить">✕</button>
+            <h2 id="view-name"></h2>
+            <div id="barcode-display" class="barcode-display"></div>
             <button id="back-btn" class="primary-btn">← Назад</button>
         </div>
-
-        <div id="confirm-modal" class="modal hidden">
-            <div class="modal-content">
-                <p>Вы уверены, что хотите удалить эту карту?</p>
-                <div class="button-group">
-                    <button id="confirm-delete-btn" class="danger-btn">Удалить</button>
-                    <button id="cancel-delete-btn" class="secondary-btn">Отмена</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="loading-overlay" class="loading-overlay hidden">
-            <div class="spinner"></div>
-            <p>Распознавание штрихкода...</p>
-        </div>
     </div>
-
-    <!-- БЕЗ type="module" — важно для глобальных переменных -->
+    <canvas id="canvas" class="hidden"></canvas>
     <script src="app.js"></script>
 </body>
 </html>
