@@ -174,7 +174,7 @@ h2 {
     padding: 10px 16px;
 }
 
-/* НОВОЕ: Кнопки сканирования */
+/* Кнопки сканирования */
 .scan-options {
     display: flex;
     gap: 8px;
@@ -244,7 +244,7 @@ input[type="color"] {
     color: rgba(255, 255, 255, 0.7);
 }
 
-/* Список карт - КОМПАКТНЫЙ ДИЗАЙН */
+/* Список карт */
 #cards-list {
     display: flex;
     flex-direction: column;
@@ -315,7 +315,7 @@ input[type="color"] {
     left: 0;
 }
 
-/* Отображение штрихкода - БЕЛЫЙ ФОН */
+/* Отображение штрихкода */
 #barcode-display {
     margin: 24px 0;
     padding: 24px;
@@ -389,7 +389,7 @@ input[type="color"] {
     font-size: 16px;
 }
 
-/* НОВОЕ: Индикатор загрузки */
+/* Индикатор загрузки */
 .loading-overlay {
     position: fixed;
     top: 0;
