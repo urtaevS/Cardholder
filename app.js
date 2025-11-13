@@ -1,7 +1,7 @@
 // Инициализация Telegram WebApp
 const tg = window.Telegram.WebApp;
 tg.expand();
-tg.enableClosingConfirmation();
+// tg.enableClosingConfirmation();
 
 // ===== НАСТРОЙКА ДОСТУПА =====
 const ALLOWED_USER_IDS = [
