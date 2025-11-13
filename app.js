@@ -5,7 +5,7 @@ tg.disableClosingConfirmation();
 
 // ===== НАСТРОЙКА ДОСТУПА =====
 const ALLOWED_USER_IDS = [
-        // ЗАМЕНИТЕ НА ВАШ ID!
+      186757704  // ЗАМЕНИТЕ НА ВАШ ID!
 ];
 
 function checkAccess() {
