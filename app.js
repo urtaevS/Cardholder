@@ -1,9 +1,7 @@
 // Инициализация Telegram WebApp
 const tg = window.Telegram.WebApp;
 tg.expand();
-
-// ИСПРАВЛЕНО: Отключаем подтверждение закрытия (было enableClosingConfirmation())
-tg.disableClosingConfirmation();
+// УДАЛЕНО: tg.enableClosingConfirmation(); — теперь без подтверждения
 
 // ===== НАСТРОЙКА ДОСТУПА =====
 const ALLOWED_USER_IDS = [
@@ -517,7 +515,7 @@ importBtn.addEventListener('click', importCards);
 if (checkAccess()) {
     loadCards();
     
-    // Интеграция с Telegram BackButton
+    // Интеграция с Telegram BackButton (без подтверждения)
     tg.BackButton.onClick(() => {
         if (!mainScreen.classList.contains('hidden')) {
             tg.close();
