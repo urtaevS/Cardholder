@@ -1,47 +1,61 @@
-// === ИНИЦИАЛИЗАЦИЯ ===
+// Инициализация Telegram WebApp
 const tg = window.Telegram.WebApp;
 tg.expand();
 tg.disableClosingConfirmation();
 
 let cards = [];
+let currentCardId = null;
+let editingId = null;
 let scanning = false;
 let stream = null;
-let currentCardId = null;
 
-// Элементы
-const $ = (id) => document.getElementById(id);
-const mainScreen = $('main-screen');
-const addScreen = $('add-screen');
-const viewScreen = $('view-screen');
-const cardsList = $('cards-list');
-const nameInput = $('name');
-const colorInput = $('color');
-const barcodeInput = $('barcode');
-const scannerDiv = $('scanner');
-const video = $('video');
-const canvas = $('canvas');
-const fileInput = $('file-input');
+// Элементы DOM
+const $ = id => document.getElementById(id);
+const mainScreen = $('#main-screen');
+const addScreen = $('#add-screen');
+const viewScreen = $('#view-screen');
+const cardsList = $('#cards-list');
+const addTitle = $('#add-title');
+const nameInput = $('#name-input');
+const colorInput = $('#color-input');
+const barcodeInput = $('#barcode-input');
+const scannerContainer = $('#scanner-container');
+const video = $('#video');
+const canvas = $('#canvas');
+const fileInput = $('#file-input');
+const saveBtn = $('#save-btn');
+const cancelBtn = $('#cancel-btn');
+const scanBtn = $('#scan-btn');
+const uploadBtn = $('#upload-btn');
+const exportBtn = $('#export-btn');
+const importBtn = $('#import-btn');
+const backBtn = $('#back-btn');
+const editBtn = $('#edit-btn');
+const deleteBtn = $('#delete-btn');
+const viewName = $('#view-name');
+const barcodeDisplay = $('#barcode-display');
 
-// === ФУНКЦИИ ===
+// Функции хелперы
 function log(msg) {
-    console.log('[App]', msg);
-    // Для дебага в Telegram
-    if (window.location.search.includes('debug')) {
-        alert(msg);
-    }
+    console.log('[Loyalty App]', msg);
 }
 
 function showScreen(screen) {
     [mainScreen, addScreen, viewScreen].forEach(s => s.classList.add('hidden'));
     screen.classList.remove('hidden');
-    log('Show screen: ' + screen.id);
+    log(`Show screen: ${screen.id}`);
 }
 
+function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+}
+
+// Загрузка/сохранение карт
 function loadCards() {
     try {
-        const stored = localStorage.getItem('cards');
+        const stored = localStorage.getItem('loyaltyCards');
         cards = stored ? JSON.parse(stored) : [];
-        log('Loaded ' + cards.length + ' cards');
+        log(`Loaded ${cards.length} cards`);
         renderCards();
     } catch (e) {
         log('Load error: ' + e.message);
@@ -51,41 +65,39 @@ function loadCards() {
 
 function saveCards() {
     try {
-        localStorage.setItem('cards', JSON.stringify(cards));
-        log('Saved ' + cards.length + ' cards');
+        localStorage.setItem('loyaltyCards', JSON.stringify(cards));
+        log(`Saved ${cards.length} cards`);
     } catch (e) {
         log('Save error: ' + e.message);
-        alert('Ошибка сохранения!');
+        tg.showAlert('Ошибка сохранения!');
     }
 }
 
+// Рендер списка карт (только название на фоне цвета)
 function renderCards() {
     cardsList.innerHTML = '';
     if (cards.length === 0) {
-        cardsList.innerHTML = '<p style="text-align:center;color:#999;">Нет карт</p>';
+        cardsList.innerHTML = '<p style="text-align: center; color: var(--tg-hint-color, #999);">Нет сохранённых карт. Добавьте первую!</p>';
         return;
     }
     cards.forEach(card => {
-        const div = document.createElement('div');
-        div.className = 'card-item';
-        div.style.backgroundColor = card.color || '#3390ec';
-        div.textContent = card.name;
-        div.onclick = () => viewCard(card.id);
-        cardsList.appendChild(div);
+        const item = document.createElement('div');
+        item.className = 'card-item';
+        item.style.backgroundColor = card.color;
+        item.textContent = card.name;
+        item.onclick = () => viewCard(card.id);
+        cardsList.appendChild(item);
     });
-    log('Rendered ' + cards.length + ' cards');
+    log('Rendered cards');
 }
 
+// Просмотр карты (штрихкод с белым фоном)
 function viewCard(id) {
     const card = cards.find(c => c.id === id);
-    if (!card) {
-        alert('Карта не найдена!');
-        return;
-    }
+    if (!card) return;
     currentCardId = id;
-    $('view-name').textContent = card.name;
-    const display = $('barcode-display');
-    display.innerHTML = '<svg id="barcode-svg"></svg><p>' + card.barcode + '</p>';
+    viewName.textContent = card.name;
+    barcodeDisplay.innerHTML = `<svg id="barcode-svg"></svg><p>${escapeHtml(card.barcode)}</p>`;
     try {
         if (typeof JsBarcode !== 'undefined') {
             JsBarcode('#barcode-svg', card.barcode, {
@@ -96,43 +108,50 @@ function viewCard(id) {
                 background: '#ffffff',
                 lineColor: '#000000'
             });
-            log('Barcode generated');
         } else {
-            log('JsBarcode not loaded');
+            barcodeDisplay.innerHTML = `<p style="font-size: 24px; color: #000; font-family: monospace;">${escapeHtml(card.barcode)}</p>`;
         }
     } catch (e) {
         log('Barcode error: ' + e.message);
-        display.innerHTML = '<p style="font-size:24px;color:#000;">' + card.barcode + '</p>';
+        barcodeDisplay.innerHTML = `<p style="font-size: 24px; color: #000;">${escapeHtml(card.barcode)}</p>`;
     }
     showScreen(viewScreen);
 }
 
-// === СКАНИРОВАНИЕ ===
-async function startScan() {
-    log('Start scan');
+// Сканирование камерой
+async function startScanning() {
+    if (scanning) return;
+    scanning = true;
     try {
-        stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'environment', width: 1280, height: 720 } 
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
         });
         video.srcObject = stream;
-        await video.play();
-        scannerDiv.classList.remove('hidden');
-        scanning = true;
+        video.play();
+        scannerContainer.classList.remove('hidden');
+        scanBtn.textContent = '⏹ Остановить';
+        scanBtn.classList.add('danger');
+        scanBtn.classList.remove('secondary');
         tick();
+        log('Scanning started');
     } catch (e) {
-        alert('Ошибка камеры: ' + e.message);
-        log('Camera error: ' + e);
+        tg.showAlert('Ошибка доступа к камере: ' + e.message);
+        log('Scan error: ' + e.message);
+        stopScanning();
     }
 }
 
-function stopScan() {
+function stopScanning() {
+    scanning = false;
     if (stream) {
-        stream.getTracks().forEach(t => t.stop());
+        stream.getTracks().forEach(track => track.stop());
         stream = null;
     }
-    scannerDiv.classList.add('hidden');
-    scanning = false;
-    log('Scan stopped');
+    scannerContainer.classList.add('hidden');
+    scanBtn.textContent = '📷 Сканировать камерой';
+    scanBtn.classList.remove('danger');
+    scanBtn.classList.add('secondary');
+    log('Scanning stopped');
 }
 
 function tick() {
@@ -147,9 +166,8 @@ function tick() {
             const code = jsQR(imageData.data, imageData.width, imageData.height);
             if (code) {
                 barcodeInput.value = code.data;
-                stopScan();
-                alert('Штрихкод: ' + code.data);
-                log('Scanned: ' + code.data);
+                tg.showAlert(`Штрихкод: ${code.data}`);
+                stopScanning();
                 return;
             }
         }
@@ -157,9 +175,8 @@ function tick() {
     requestAnimationFrame(tick);
 }
 
-// === ЗАГРУЗКА ФОТО ===
-function uploadPhoto(file) {
-    log('Upload photo');
+// Загрузка фото
+function handleFileUpload(file) {
     const img = new Image();
     img.onload = () => {
         canvas.width = img.width;
@@ -171,72 +188,156 @@ function uploadPhoto(file) {
             const code = jsQR(imageData.data, imageData.width, imageData.height);
             if (code) {
                 barcodeInput.value = code.data;
-                alert('Штрихкод распознан: ' + code.data);
-                log('Decoded: ' + code.data);
+                tg.showAlert(`Распознано: ${code.data}`);
+                log('Photo decoded: ' + code.data);
             } else {
-                alert('Штрихкод не найден на фото');
-                log('No code found');
+                tg.showAlert('Штрихкод не найден на фото');
             }
         }
+        URL.revokeObjectURL(img.src);
     };
     img.src = URL.createObjectURL(file);
 }
 
-// === СОБЫТИЯ ===
-$('add-btn').onclick = () => {
-    nameInput.value = '';
-    barcodeInput.value = '';
-    colorInput.value = '#3390ec';
-    showScreen(addScreen);
-};
-
-$('save-btn').onclick = () => {
-    const name = nameInput.value.trim();
-    const barcode = barcodeInput.value.trim();
-    const color = colorInput.value;
-    if (!name || !barcode) {
-        alert('Заполните все поля!');
+// Импорт/экспорт
+function exportCards() {
+    if (cards.length === 0) {
+        tg.showAlert('Нет карт для экспорта');
         return;
     }
-    const newCard = { id: Date.now(), name, barcode, color };
-    cards.push(newCard);
-    saveCards();
-    renderCards();
-    showScreen(mainScreen);
-    log('Card added: ' + name);
+    const dataStr = JSON.stringify(cards, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cards-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    tg.showAlert(`Экспортировано ${cards.length} карт`);
+}
+
+function importCards() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = event => {
+            try {
+                const imported = JSON.parse(event.target.result);
+                if (Array.isArray(imported)) {
+                    cards = imported.map(c => ({ ...c, id: c.id || Date.now() + Math.random() }));
+                    saveCards();
+                    renderCards();
+                    tg.showAlert(`Импортировано ${imported.length} карт`);
+                } else {
+                    tg.showAlert('Неверный формат файла');
+                }
+            } catch (e) {
+                tg.showAlert('Ошибка чтения файла');
+                log('Import error: ' + e.message);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+// События
+scanBtn.onclick = startScanning;
+uploadBtn.onclick = () => fileInput.click();
+fileInput.onchange = e => handleFileUpload(e.target.files[0]);
+exportBtn.onclick = exportCards;
+importBtn.onclick = importCards;
+backBtn.onclick = () => showScreen(mainScreen);
+editBtn.onclick = () => {
+    const card = cards.find(c => c.id === currentCardId);
+    if (card) {
+        editingId = card.id;
+        addTitle.textContent = 'Редактировать карту';
+        nameInput.value = card.name;
+        colorInput.value = card.color;
+        barcodeInput.value = card.barcode;
+        showScreen(addScreen);
+    }
 };
-
-$('cancel-btn').onclick = () => {
-    stopScan();
-    showScreen(mainScreen);
-};
-
-$('back-btn').onclick = () => showScreen(mainScreen);
-
-$('delete-btn').onclick = () => {
+deleteBtn.onclick = () => {
     if (confirm('Удалить карту?')) {
         cards = cards.filter(c => c.id !== currentCardId);
         saveCards();
         renderCards();
         showScreen(mainScreen);
-        log('Card deleted');
+        tg.showAlert('Карта удалена');
     }
 };
-
-$('scan-btn').onclick = startScan;
-$('stop-scan').onclick = stopScan;
-$('upload-btn').onclick = () => fileInput.click();
-fileInput.onchange = (e) => {
-    const file = e.target.files[0];
-    if (file) uploadPhoto(file);
+cancelBtn.onclick = () => {
+    stopScanning();
+    editingId = null;
+    addTitle.textContent = 'Добавить карту';
+    nameInput.value = '';
+    barcodeInput.value = '';
+    colorInput.value = '#3390ec';
+    showScreen(mainScreen);
 };
 
-// === ЗАПУСК ===
+// Добавление/редактирование
+$('#add-btn').onclick = () => {
+    editingId = null;
+    addTitle.textContent = 'Добавить карту';
+    nameInput.value = '';
+    barcodeInput.value = '';
+    colorInput.value = '#3390ec';
+    showScreen(addScreen);
+    stopScanning();
+};
+saveBtn.onclick = () => {
+    const name = nameInput.value.trim();
+    const barcode = barcodeInput.value.trim();
+    const color = colorInput.value;
+    if (!name || !barcode) {
+        tg.showAlert('Заполните название и штрихкод');
+        return;
+    }
+    if (editingId) {
+        const index = cards.findIndex(c => c.id === editingId);
+        if (index > -1) {
+            cards[index] = { ...cards[index], name, barcode, color };
+            tg.showAlert('Карта обновлена');
+        }
+    } else {
+        cards.push({ id: Date.now(), name, barcode, color });
+        tg.showAlert('Карта добавлена');
+    }
+    saveCards();
+    renderCards();
+    editingId = null;
+    showScreen(mainScreen);
+    stopScanning();
+};
+
+// Инициализация
 tg.ready(() => {
-    log('TG ready');
+    log('Telegram ready');
     loadCards();
-    // Для теста в браузере
-    if (!tg.initDataUnsafe.user) {
-        log('Test mode');
-    }
+    // BackButton для навигации
+    tg.BackButton.onClick(() => {
+        if (viewScreen.classList.contains('hidden') && addScreen.classList.contains('hidden')) {
+            tg.close();
+        } else {
+            showScreen(mainScreen);
+            stopScanning();
+        }
+    });
+    tg.BackButton.hide(); // Скрыто на главном
+    // Observer для показа BackButton
+    const observer = new MutationObserver(() => {
+        if (mainScreen.classList.contains('hidden')) {
+            tg.BackButton.show();
+        } else {
+            tg.BackButton.hide();
+        }
+    });
+    observer.observe(mainScreen, { attributes: true, attributeFilter: ['class'] });
 });
