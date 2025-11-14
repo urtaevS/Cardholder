@@ -73,7 +73,7 @@ body {
 }
 
 .card {
-    aspect-ratio: 2.4; /* компактнее по высоте */
+    aspect-ratio: 3.4; /* компактнее по высоте */
     border-radius: 12px;
     padding: 12px;
     display: flex;
