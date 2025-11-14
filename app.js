@@ -140,41 +140,63 @@ function processBarcodeImage(file) {
     reader.onload = () => {
         const dataUrl = reader.result;
 
-        // Проверяем наличие Quagga
         if (typeof Quagga === 'undefined') {
-            console.warn('QuaggaJS не подключен, не могу распознать штрихкод');
+            console.warn('QuaggaJS не подключён');
+            tg.showAlert?.('Модуль распознавания не загружен');
             return;
         }
 
-        // Используем decodeSingle для распознавания штрихкода по одному изображению [web:165][web:169]
-        Quagga.decodeSingle({
-            src: dataUrl,                // dataURL из FileReader
-            numOfWorkers: 0,             // в браузере без webworkers достаточно 0
-            locate: true,                // попытаться найти штрихкод на изображении
-            inputStream: {
-                size: 800                // ограничиваем ширину для скорости
-            },
-            decoder: {
-                // можно добавить другие форматы при необходимости
-                readers: [
-                    'code_128_reader',
-                    'ean_reader',
-                    'ean_8_reader',
-                    'upc_reader',
-                    'upc_e_reader',
-                    'code_39_reader'
-                ]
-            }
-        }, function (result) {
-            if (result && result.codeResult && result.codeResult.code) {
-                const code = result.codeResult.code;
-                document.getElementById('barcodeNumber').value = code;
-                tg.showAlert?.('Штрихкод распознан: ' + code);
-            } else {
-                tg.showAlert?.('Не удалось распознать штрихкод на фото');
-                console.warn('Quagga: штрихкод не найден', result);
-            }
-        });
+        // Увеличиваем картинку до разумного размера, нормализуем контраст
+        const image = new Image();
+        image.onload = () => {
+            // Нормализуем изображение через canvas
+            const canvas = document.createElement('canvas');
+            const maxWidth = 1000; // достаточно для сканера, но не слишком тяжело
+            const scale = Math.min(1, maxWidth / image.width);
+            canvas.width = Math.round(image.width * scale);
+            canvas.height = Math.round(image.height * scale);
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+            const normalizedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+            Quagga.decodeSingle({
+                src: normalizedDataUrl,
+                locate: true,
+                numOfWorkers: 0,
+                inputStream: {
+                    size: 800 // внутренний ресайз для Quagga
+                },
+                decoder: {
+                    readers: [
+                        'code_128_reader',
+                        'ean_reader',
+                        'ean_8_reader',
+                        'upc_reader',
+                        'upc_e_reader',
+                        'code_39_reader',
+                        'code_93_reader'
+                    ]
+                }
+            }, function (result) {
+                if (result && result.codeResult && result.codeResult.code) {
+                    const code = result.codeResult.code;
+                    document.getElementById('barcodeNumber').value = code;
+                    tg.showAlert?.('Штрихкод распознан: ' + code);
+                } else {
+                    tg.showAlert?.('Не удалось распознать штрихкод. Попробуйте ближе, без бликов и строго по центру.');
+                    console.warn('Quagga: штрихкод не найден', result);
+                }
+            });
+        };
+
+        image.onerror = (err) => {
+            console.error('Image load error:', err);
+            tg.showAlert?.('Не удалось загрузить изображение для распознавания');
+        };
+
+        image.src = dataUrl;
     };
 
     reader.onerror = (err) => {
@@ -184,6 +206,7 @@ function processBarcodeImage(file) {
 
     reader.readAsDataURL(file);
 }
+
 
 // ===== СОХРАНЕНИЕ КАРТЫ =====
 saveCardBtn.addEventListener('click', () => {
