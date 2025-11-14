@@ -34,6 +34,9 @@ const importJsonTextarea   = document.getElementById('importJsonTextarea');
 const applyImportJsonBtn   = document.getElementById('applyImportJsonBtn');
 const copyNumberBtn        = document.getElementById('copyNumberBtn');
 
+const backFromViewBtn      = document.getElementById('backFromViewBtn');
+const cardViewBody         = document.getElementById('cardViewBody');
+
 // ===== LOCALSTORAGE =====
 function loadCards() {
     try {
@@ -172,7 +175,30 @@ function viewCard(id) {
     openModal(viewModal);
 }
 
-// Копирование номера карты в буфер обмена
+// Кнопка "Назад"
+backFromViewBtn.addEventListener('click', () => {
+    closeModal(viewModal);
+});
+
+// Закрытие по клику на саму карту (кроме кнопок)
+cardViewBody.addEventListener('click', (e) => {
+    const target = e.target;
+
+    if (
+        target.id === 'editBtn' ||
+        target.id === 'deleteBtn' ||
+        target.id === 'copyNumberBtn' ||
+        target.closest('#editBtn') ||
+        target.closest('#deleteBtn') ||
+        target.closest('#copyNumberBtn')
+    ) {
+        return;
+    }
+
+    closeModal(viewModal);
+});
+
+// Копирование номера
 copyNumberBtn.addEventListener('click', () => {
     const code = document.getElementById('barcodeText').textContent.trim();
     if (!code) {
