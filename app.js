@@ -17,7 +17,6 @@ const addCardBtn = document.getElementById('addCardBtn');
 const addModal = document.getElementById('addModal');
 const viewModal = document.getElementById('viewModal');
 const editModal = document.getElementById('editModal');
-const exportModal = document.getElementById('exportModal');
 const cardsGrid = document.getElementById('cardsGrid');
 const saveCardBtn = document.getElementById('saveCardBtn');
 const cameraBtn = document.getElementById('cameraBtn');
@@ -225,35 +224,38 @@ document.getElementById('deleteBtn').addEventListener('click', () => {
     });
 });
 
-// Экспорт карт - показываем модальное окно с данными
+// Экспорт карт в файл
 exportBtn.addEventListener('click', () => {
     const dataStr = JSON.stringify(cards, null, 2);
-    document.getElementById('exportData').value = dataStr;
-    exportModal.style.display = 'flex';
-});
-
-// Копирование данных экспорта в буфер обмена
-document.getElementById('copyExportBtn').addEventListener('click', () => {
-    const exportData = document.getElementById('exportData');
-    exportData.select();
-    exportData.setSelectionRange(0, 99999); // Для мобильных устройств
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
     
-    try {
-        document.execCommand('copy');
-        tg.showAlert('Данные скопированы! Вставьте их в текстовый редактор и сохраните как .json файл');
-        exportModal.style.display = 'none';
-    } catch (err) {
-        // Альтернативный метод через Clipboard API
-        navigator.clipboard.writeText(exportData.value).then(() => {
-            tg.showAlert('Данные скопированы! Вставьте их в текстовый редактор и сохраните как .json файл');
-            exportModal.style.display = 'none';
-        }).catch(() => {
-            tg.showAlert('Не удалось скопировать. Выделите текст и скопируйте вручную (Ctrl+C или долгое нажатие)');
-        });
-    }
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'loyalty_cards.json';
+    link.style.display = 'none';
+    
+    document.body.appendChild(link);
+    
+    // Используем dispatchEvent для совместимости с Firefox и мобильными браузерами
+    link.dispatchEvent(
+        new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        })
+    );
+    
+    // Задержка перед удалением ссылки для Firefox
+    setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }, 100);
+    
+    tg.showAlert('Файл экспортирован');
 });
 
-// Импорт карт
+// Импорт карт из файла
 importBtn.addEventListener('click', () => {
     importInput.click();
 });
@@ -279,6 +281,8 @@ importInput.addEventListener('change', (e) => {
         };
         reader.readAsText(file);
     }
+    // Сброс значения input для возможности повторного выбора того же файла
+    importInput.value = '';
 });
 
 // Сохранение в localStorage
@@ -291,7 +295,6 @@ window.addEventListener('click', (e) => {
     if (e.target === addModal) addModal.style.display = 'none';
     if (e.target === viewModal) viewModal.style.display = 'none';
     if (e.target === editModal) editModal.style.display = 'none';
-    if (e.target === exportModal) exportModal.style.display = 'none';
 });
 
 // Инициализация
