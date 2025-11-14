@@ -17,6 +17,7 @@ const addCardBtn = document.getElementById('addCardBtn');
 const addModal = document.getElementById('addModal');
 const viewModal = document.getElementById('viewModal');
 const editModal = document.getElementById('editModal');
+const exportModal = document.getElementById('exportModal');
 const cardsGrid = document.getElementById('cardsGrid');
 const saveCardBtn = document.getElementById('saveCardBtn');
 const cameraBtn = document.getElementById('cameraBtn');
@@ -37,10 +38,9 @@ addCardBtn.addEventListener('click', () => {
 
 // Закрытие модальных окон
 document.querySelectorAll('.close').forEach(closeBtn => {
-    closeBtn.addEventListener('click', () => {
-        addModal.style.display = 'none';
-        viewModal.style.display = 'none';
-        editModal.style.display = 'none';
+    closeBtn.addEventListener('click', (e) => {
+        const modal = e.target.closest('.modal');
+        modal.style.display = 'none';
     });
 });
 
@@ -225,17 +225,32 @@ document.getElementById('deleteBtn').addEventListener('click', () => {
     });
 });
 
-// Экспорт карт
+// Экспорт карт - показываем модальное окно с данными
 exportBtn.addEventListener('click', () => {
     const dataStr = JSON.stringify(cards, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'loyalty_cards.json';
-    link.click();
-    URL.revokeObjectURL(url);
-    tg.showAlert('Карты экспортированы');
+    document.getElementById('exportData').value = dataStr;
+    exportModal.style.display = 'flex';
+});
+
+// Копирование данных экспорта в буфер обмена
+document.getElementById('copyExportBtn').addEventListener('click', () => {
+    const exportData = document.getElementById('exportData');
+    exportData.select();
+    exportData.setSelectionRange(0, 99999); // Для мобильных устройств
+    
+    try {
+        document.execCommand('copy');
+        tg.showAlert('Данные скопированы! Вставьте их в текстовый редактор и сохраните как .json файл');
+        exportModal.style.display = 'none';
+    } catch (err) {
+        // Альтернативный метод через Clipboard API
+        navigator.clipboard.writeText(exportData.value).then(() => {
+            tg.showAlert('Данные скопированы! Вставьте их в текстовый редактор и сохраните как .json файл');
+            exportModal.style.display = 'none';
+        }).catch(() => {
+            tg.showAlert('Не удалось скопировать. Выделите текст и скопируйте вручную (Ctrl+C или долгое нажатие)');
+        });
+    }
 });
 
 // Импорт карт
@@ -250,12 +265,16 @@ importInput.addEventListener('change', (e) => {
         reader.onload = (event) => {
             try {
                 const importedCards = JSON.parse(event.target.result);
-                cards = [...cards, ...importedCards];
-                saveCards();
-                renderCards();
-                tg.showAlert('Карты импортированы');
+                if (Array.isArray(importedCards)) {
+                    cards = [...cards, ...importedCards];
+                    saveCards();
+                    renderCards();
+                    tg.showAlert(`Импортировано карт: ${importedCards.length}`);
+                } else {
+                    tg.showAlert('Неверный формат файла');
+                }
             } catch (error) {
-                tg.showAlert('Ошибка импорта');
+                tg.showAlert('Ошибка чтения файла. Убедитесь, что это корректный JSON');
             }
         };
         reader.readAsText(file);
@@ -272,6 +291,7 @@ window.addEventListener('click', (e) => {
     if (e.target === addModal) addModal.style.display = 'none';
     if (e.target === viewModal) viewModal.style.display = 'none';
     if (e.target === editModal) editModal.style.display = 'none';
+    if (e.target === exportModal) exportModal.style.display = 'none';
 });
 
 // Инициализация
