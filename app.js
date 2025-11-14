@@ -22,7 +22,6 @@ const importModal      = document.getElementById('importModal');
 const cardsGrid        = document.getElementById('cardsGrid');
 
 const saveCardBtn      = document.getElementById('saveCardBtn');
-// const cameraBtn      = document.getElementById('cameraBtn'); // камеры больше нет
 const uploadBtn        = document.getElementById('uploadBtn');
 const fileInput        = document.getElementById('fileInput');
 
@@ -134,17 +133,59 @@ fileInput.addEventListener('change', (e) => {
     if (e.target.files[0]) processBarcodeImage(e.target.files[0]);
 });
 
-// Обработка изображения карты (сейчас только чтение, без распознавания)
+// ===== РАСПОЗНАВАНИЕ ШТРИХКОДА ИЗ ФОТО =====
 function processBarcodeImage(file) {
     const reader = new FileReader();
+
     reader.onload = () => {
         const dataUrl = reader.result;
-        console.log('Фото карты загружено, длина dataURL:', typeof dataUrl === 'string' ? dataUrl.length : 0);
-        // Здесь можно будет добавить реальное распознавание штрихкода по изображению.
+
+        // Проверяем наличие Quagga
+        if (typeof Quagga === 'undefined') {
+            console.warn('QuaggaJS не подключен, не могу распознать штрихкод');
+            return;
+        }
+
+        // Используем decodeSingle для распознавания штрихкода по одному изображению [web:165][web:169]
+        Quagga.decodeSingle({
+            src: dataUrl,                // dataURL из FileReader
+            numOfWorkers: 0,             // в браузере без webworkers достаточно 0
+            locate: true,                // попытаться найти штрихкод на изображении
+            inputStream: {
+                size: 800                // ограничиваем ширину для скорости
+            },
+            decoder: {
+                // можно добавить другие форматы при необходимости
+                readers: [
+                    'code_128_reader',
+                    'ean_reader',
+                    'ean_8_reader',
+                    'upc_reader',
+                    'upc_e_reader',
+                    'code_39_reader'
+                ]
+            }
+        }, function (result) {
+            if (result && result.codeResult && result.codeResult.code) {
+                const code = result.codeResult.code;
+                document.getElementById('barcodeNumber').value = code;
+                tg.showAlert?.('Штрихкод распознан: ' + code);
+            } else {
+                tg.showAlert?.('Не удалось распознать штрихкод на фото');
+                console.warn('Quagga: штрихкод не найден', result);
+            }
+        });
     };
+
+    reader.onerror = (err) => {
+        console.error('FileReader error:', err);
+        tg.showAlert?.('Ошибка чтения файла изображения');
+    };
+
     reader.readAsDataURL(file);
 }
 
+// ===== СОХРАНЕНИЕ КАРТЫ =====
 saveCardBtn.addEventListener('click', () => {
     const name = document.getElementById('cardName').value.trim();
     const barcode = document.getElementById('barcodeNumber').value.trim();
