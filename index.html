@@ -22,7 +22,7 @@
 
     <div class="cards-grid" id="cardsGrid"></div>
 
-    <!-- Модальное окно добавления карты -->
+    <!-- Добавление карты -->
     <div class="modal" id="addModal">
         <div class="modal-content">
             <span class="close" data-target="addModal">&times;</span>
@@ -56,7 +56,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно просмотра карты -->
+    <!-- Просмотр карты -->
     <div class="modal" id="viewModal">
         <div class="modal-content card-view">
             <span class="close" data-target="viewModal">&times;</span>
@@ -74,7 +74,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно редактирования -->
+    <!-- Редактирование карты -->
     <div class="modal" id="editModal">
         <div class="modal-content">
             <span class="close" data-target="editModal">&times;</span>
@@ -102,12 +102,12 @@
         </div>
     </div>
 
-    <!-- Модальное окно для экспорта (fallback для Telegram) -->
+    <!-- Экспорт для Telegram (текст) -->
     <div class="modal" id="exportModal">
         <div class="modal-content">
             <span class="close" data-target="exportModal">&times;</span>
             <h2>Экспорт карт</h2>
-            <p>Скопируйте текст и сохраните его как файл .json (например, в «Избранном»):</p>
+            <p>В Telegram загрузка файлов из мини‑приложений ограничена. Скопируйте текст ниже и сохраните его как .json (например, в «Избранном»).</p>
             <textarea id="exportData" class="export-textarea" readonly></textarea>
             <button class="btn btn-primary" id="copyExportBtn">📋 Копировать</button>
         </div>
