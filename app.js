@@ -22,8 +22,6 @@ const importModal      = document.getElementById('importModal');
 const cardsGrid        = document.getElementById('cardsGrid');
 
 const saveCardBtn      = document.getElementById('saveCardBtn');
-const uploadBtn        = document.getElementById('uploadBtn');
-const fileInput        = document.getElementById('fileInput');
 
 const importBtn        = document.getElementById('importBtn');
 const exportBtn        = document.getElementById('exportBtn');
@@ -34,6 +32,7 @@ const importFromFileBtn    = document.getElementById('importFromFileBtn');
 const importFromJsonBtn    = document.getElementById('importFromJsonBtn');
 const importJsonTextarea   = document.getElementById('importJsonTextarea');
 const applyImportJsonBtn   = document.getElementById('applyImportJsonBtn');
+const copyNumberBtn        = document.getElementById('copyNumberBtn');
 
 // ===== LOCALSTORAGE =====
 function loadCards() {
@@ -126,89 +125,6 @@ addCardBtn.addEventListener('click', () => {
     openModal(addModal);
 });
 
-// Загрузка файла из медиа/галереи
-uploadBtn.addEventListener('click', () => fileInput.click());
-
-fileInput.addEventListener('change', (e) => {
-    if (e.target.files[0]) processBarcodeImage(e.target.files[0]);
-});
-
-// ===== РАСПОЗНАВАНИЕ ШТРИХКОДА ИЗ ФОТО =====
-function processBarcodeImage(file) {
-    const reader = new FileReader();
-
-    reader.onload = () => {
-        const dataUrl = reader.result;
-
-        if (typeof Quagga === 'undefined') {
-            console.warn('QuaggaJS не подключён');
-            tg.showAlert?.('Модуль распознавания не загружен');
-            return;
-        }
-
-        // Увеличиваем картинку до разумного размера, нормализуем контраст
-        const image = new Image();
-        image.onload = () => {
-            // Нормализуем изображение через canvas
-            const canvas = document.createElement('canvas');
-            const maxWidth = 1000; // достаточно для сканера, но не слишком тяжело
-            const scale = Math.min(1, maxWidth / image.width);
-            canvas.width = Math.round(image.width * scale);
-            canvas.height = Math.round(image.height * scale);
-
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-            const normalizedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-
-            Quagga.decodeSingle({
-                src: normalizedDataUrl,
-                locate: true,
-                numOfWorkers: 0,
-                inputStream: {
-                    size: 800 // внутренний ресайз для Quagga
-                },
-                decoder: {
-                    readers: [
-                        'code_128_reader',
-                        'ean_reader',
-                        'ean_8_reader',
-                        'upc_reader',
-                        'upc_e_reader',
-                        'code_39_reader',
-                        'code_93_reader'
-                    ]
-                }
-            }, function (result) {
-                if (result && result.codeResult && result.codeResult.code) {
-                    const code = result.codeResult.code;
-                    document.getElementById('barcodeNumber').value = code;
-                    tg.showAlert?.('Штрихкод распознан: ' + code);
-                } else {
-                    tg.showAlert?.('Не удалось распознать штрихкод. Попробуйте ближе, без бликов и строго по центру.');
-                    console.warn('Quagga: штрихкод не найден', result);
-                }
-            });
-        };
-
-        image.onerror = (err) => {
-            console.error('Image load error:', err);
-            tg.showAlert?.('Не удалось загрузить изображение для распознавания');
-        };
-
-        image.src = dataUrl;
-    };
-
-    reader.onerror = (err) => {
-        console.error('FileReader error:', err);
-        tg.showAlert?.('Ошибка чтения файла изображения');
-    };
-
-    reader.readAsDataURL(file);
-}
-
-
-// ===== СОХРАНЕНИЕ КАРТЫ =====
 saveCardBtn.addEventListener('click', () => {
     const name = document.getElementById('cardName').value.trim();
     const barcode = document.getElementById('barcodeNumber').value.trim();
@@ -255,6 +171,49 @@ function viewCard(id) {
 
     openModal(viewModal);
 }
+
+// Копирование номера карты в буфер обмена
+copyNumberBtn.addEventListener('click', () => {
+    const code = document.getElementById('barcodeText').textContent.trim();
+    if (!code) {
+        tg.showAlert?.('Номер карты отсутствует');
+        return;
+    }
+
+    let copied = false;
+
+    const tmp = document.createElement('textarea');
+    tmp.value = code;
+    tmp.style.position = 'fixed';
+    tmp.style.left = '-9999px';
+    document.body.appendChild(tmp);
+    tmp.select();
+    tmp.setSelectionRange(0, 999999);
+
+    try {
+        copied = document.execCommand('copy');
+    } catch (e) {
+        copied = false;
+    }
+    document.body.removeChild(tmp);
+
+    if (!copied && navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(code)
+            .then(() => {
+                copied = true;
+                tg.showAlert?.('Номер скопирован');
+            })
+            .catch(() => {
+                tg.showAlert?.('Не удалось скопировать автоматически. Выделите номер вручную.');
+            });
+    } else {
+        if (copied) {
+            tg.showAlert?.('Номер скопирован');
+        } else {
+            tg.showAlert?.('Не удалось скопировать автоматически. Выделите номер вручную.');
+        }
+    }
+});
 
 // ===== РЕДАКТИРОВАНИЕ КАРТЫ =====
 document.getElementById('editBtn').addEventListener('click', () => {
