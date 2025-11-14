@@ -32,12 +32,14 @@ const importFromFileBtn    = document.getElementById('importFromFileBtn');
 const importFromJsonBtn    = document.getElementById('importFromJsonBtn');
 const importJsonTextarea   = document.getElementById('importJsonTextarea');
 const applyImportJsonBtn   = document.getElementById('applyImportJsonBtn');
-const copyNumberBtn        = document.getElementById('copyNumberBtn');
 
-const backFromViewBtn      = document.getElementById('backFromViewBtn');
-const closeViewBtn         = document.getElementById('closeViewBtn');
-const cardViewBody         = document.getElementById('cardViewBody');
-const cardPopupHeader      = document.getElementById('cardPopupHeader');
+// const copyNumberBtn    = document.getElementById('copyNumberBtn'); // временно не используется
+const editModeBtn      = document.getElementById('editModeBtn');
+
+const backFromViewBtn  = document.getElementById('backFromViewBtn');
+const closeViewBtn     = document.getElementById('closeViewBtn');
+const cardViewBody     = document.getElementById('cardViewBody');
+const cardPopupHeader  = document.getElementById('cardPopupHeader');
 
 // ===== LOCALSTORAGE =====
 function loadCards() {
@@ -182,22 +184,18 @@ backFromViewBtn.addEventListener('click', () => {
     closeModal(viewModal);
 });
 
-// Крестик
+// Крестик в шапке
 closeViewBtn.addEventListener('click', () => {
     closeModal(viewModal);
 });
 
-// Закрытие по клику на тело модалки (кроме кнопок)
+// Закрытие по клику на тело модалки (кроме кнопки редактирования)
 cardViewBody.addEventListener('click', (e) => {
     const target = e.target;
 
     if (
-        target.id === 'editBtn' ||
-        target.id === 'deleteBtn' ||
-        target.id === 'copyNumberBtn' ||
-        target.closest('#editBtn') ||
-        target.closest('#deleteBtn') ||
-        target.closest('#copyNumberBtn')
+        target.id === 'editModeBtn' ||
+        target.closest('#editModeBtn')
     ) {
         return;
     }
@@ -205,7 +203,24 @@ cardViewBody.addEventListener('click', (e) => {
     closeModal(viewModal);
 });
 
-// Копирование номера
+// Кнопка "Режим редактирования" — открывает модалку editModal
+editModeBtn.addEventListener('click', () => {
+    if (!currentCardId) return;
+    editingCardId = currentCardId;
+    const card = cards.find(c => c.id === editingCardId);
+    if (!card) return;
+
+    document.getElementById('editCardName').value = card.name;
+    document.getElementById('editBarcodeNumber').value = card.barcode;
+    selectedColor = card.color;
+    setSelectedColor('editColors', selectedColor);
+
+    closeModal(viewModal);
+    openModal(editModal);
+});
+
+// Логика копирования номера временно отключена
+/*
 copyNumberBtn.addEventListener('click', () => {
     const code = document.getElementById('barcodeText').textContent.trim();
     if (!code) {
@@ -247,23 +262,9 @@ copyNumberBtn.addEventListener('click', () => {
         }
     }
 });
+*/
 
 // ===== РЕДАКТИРОВАНИЕ КАРТЫ =====
-document.getElementById('editBtn').addEventListener('click', () => {
-    if (!currentCardId) return;
-    editingCardId = currentCardId;
-    const card = cards.find(c => c.id === editingCardId);
-    if (!card) return;
-
-    document.getElementById('editCardName').value = card.name;
-    document.getElementById('editBarcodeNumber').value = card.barcode;
-    selectedColor = card.color;
-    setSelectedColor('editColors', selectedColor);
-
-    closeModal(viewModal);
-    openModal(editModal);
-});
-
 document.getElementById('saveEditBtn').addEventListener('click', () => {
     if (!editingCardId) return;
 
@@ -286,7 +287,9 @@ document.getElementById('saveEditBtn').addEventListener('click', () => {
 });
 
 // ===== УДАЛЕНИЕ КАРТЫ =====
-document.getElementById('deleteBtn').addEventListener('click', () => {
+// Удаление по-прежнему через просмотр (глобальная кнопка delete на viewModal)
+// оставляем как было:
+document.getElementById('deleteBtn')?.addEventListener('click', () => {
     if (!currentCardId) return;
 
     const confirmDelete = (ok) => {
