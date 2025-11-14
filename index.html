@@ -6,7 +6,6 @@
     <title>Карты лояльности</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -47,11 +46,6 @@
 
             <input type="text" id="barcodeNumber" placeholder="Номер штрихкода" class="input-field">
 
-            <div class="upload-options">
-                <button class="btn" id="uploadBtn">📁 Загрузить фото</button>
-                <input type="file" id="fileInput" accept="image/*" style="display:none;">
-            </div>
-
             <button class="btn btn-primary" id="saveCardBtn">Сохранить</button>
         </div>
     </div>
@@ -66,6 +60,7 @@
             <div class="card-back" id="cardBack">
                 <svg id="barcodeSvg"></svg>
                 <p id="barcodeText"></p>
+                <button class="btn" id="copyNumberBtn">📋 Скопировать номер</button>
                 <div class="card-actions">
                     <button class="action-btn edit-btn" id="editBtn">✏️</button>
                     <button class="action-btn delete-btn" id="deleteBtn">❌</button>
