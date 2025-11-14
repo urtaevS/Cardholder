@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карты лояльности</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Мои карты лояльности</h1>
+            <div class="header-buttons">
+                <button class="icon-btn" id="importBtn" title="Импорт">📥</button>
+                <button class="icon-btn" id="exportBtn" title="Экспорт">📤</button>
+            </div>
+        </div>
+
+        <button class="add-card-btn" id="addCardBtn">+ Добавить карту</button>
+
+        <div class="cards-grid" id="cardsGrid"></div>
+
+        <!-- Модальное окно добавления карты -->
+        <div class="modal" id="addModal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Добавить карту</h2>
+                
+                <input type="text" id="cardName" placeholder="Название магазина" class="input-field">
+                
+                <div class="color-picker">
+                    <label>Выберите цвет карты:</label>
+                    <div class="colors">
+                        <div class="color-option" data-color="#FF6B6B" style="background: #FF6B6B;"></div>
+                        <div class="color-option" data-color="#4ECDC4" style="background: #4ECDC4;"></div>
+                        <div class="color-option" data-color="#45B7D1" style="background: #45B7D1;"></div>
+                        <div class="color-option" data-color="#FFA07A" style="background: #FFA07A;"></div>
+                        <div class="color-option" data-color="#98D8C8" style="background: #98D8C8;"></div>
+                        <div class="color-option" data-color="#F7DC6F" style="background: #F7DC6F;"></div>
+                        <div class="color-option" data-color="#BB8FCE" style="background: #BB8FCE;"></div>
+                        <div class="color-option" data-color="#85C1E2" style="background: #85C1E2;"></div>
+                    </div>
+                </div>
+
+                <input type="text" id="barcodeNumber" placeholder="Номер штрихкода" class="input-field">
+                
+                <div class="upload-options">
+                    <button class="btn" id="cameraBtn">📷 Камера</button>
+                    <button class="btn" id="uploadBtn">📁 Загрузить фото</button>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                </div>
+
+                <button class="btn btn-primary" id="saveCardBtn">Сохранить</button>
+            </div>
+        </div>
+
+        <!-- Модальное окно просмотра карты -->
+        <div class="modal" id="viewModal">
+            <div class="modal-content card-view">
+                <span class="close">&times;</span>
+                <div class="card-front" id="cardFront">
+                    <h2 id="viewCardName"></h2>
+                </div>
+                <div class="card-back" id="cardBack">
+                    <svg id="barcodeSvg"></svg>
+                    <p id="barcodeText"></p>
+                    <div class="card-actions">
+                        <button class="action-btn edit-btn" id="editBtn">✏️</button>
+                        <button class="action-btn delete-btn" id="deleteBtn">❌</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно редактирования -->
+        <div class="modal" id="editModal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Редактировать карту</h2>
+                
+                <input type="text" id="editCardName" placeholder="Название магазина" class="input-field">
+                
+                <div class="color-picker">
+                    <label>Выберите цвет карты:</label>
+                    <div class="colors" id="editColors">
+                        <div class="color-option" data-color="#FF6B6B" style="background: #FF6B6B;"></div>
+                        <div class="color-option" data-color="#4ECDC4" style="background: #4ECDC4;"></div>
+                        <div class="color-option" data-color="#45B7D1" style="background: #45B7D1;"></div>
+                        <div class="color-option" data-color="#FFA07A" style="background: #FFA07A;"></div>
+                        <div class="color-option" data-color="#98D8C8" style="background: #98D8C8;"></div>
+                        <div class="color-option" data-color="#F7DC6F" style="background: #F7DC6F;"></div>
+                        <div class="color-option" data-color="#BB8FCE" style="background: #BB8FCE;"></div>
+                        <div class="color-option" data-color="#85C1E2" style="background: #85C1E2;"></div>
+                    </div>
+                </div>
+
+                <input type="text" id="editBarcodeNumber" placeholder="Номер штрихкода" class="input-field">
+
+                <button class="btn btn-primary" id="saveEditBtn">Сохранить изменения</button>
+            </div>
+        </div>
+
+        <input type="file" id="importInput" accept=".json" style="display: none;">
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
