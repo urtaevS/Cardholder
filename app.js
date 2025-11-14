@@ -127,17 +127,27 @@ addCardBtn.addEventListener('click', () => {
     openModal(addModal);
 });
 
+// Камера: просим съёмку с основной камеры
 cameraBtn.addEventListener('click', () => {
-    const inp = document.createElement('input');
-    inp.type = 'file';
-    inp.accept = 'image/*';
-    inp.capture = 'environment';
-    inp.onchange = (e) => {
-        if (e.target.files[0]) processBarcodeImage(e.target.files[0]);
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.setAttribute('capture', 'environment'); // основная камера [web:115][web:119][web:135]
+    input.style.display = 'none';
+    document.body.appendChild(input);
+
+    input.onchange = (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+            processBarcodeImage(file);
+        }
+        document.body.removeChild(input);
     };
-    inp.click();
+
+    input.click();
 });
 
+// Загрузка файла из галереи
 uploadBtn.addEventListener('click', () => fileInput.click());
 
 fileInput.addEventListener('change', (e) => {
