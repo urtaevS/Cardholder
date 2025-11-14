@@ -262,38 +262,6 @@ body {
     gap: 12px;
 }
 
-/* Маленькие кнопки редактирования/удаления сверху справа */
-.card-view-actions {
-    position: absolute;
-    top: 12px;
-    right: 16px;
-    display: flex;
-    gap: 6px;
-}
-
-.action-btn {
-    padding: 6px 8px;
-    border: none;
-    border-radius: 999px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.action-btn:active {
-    opacity: 0.7;
-}
-
-.edit-btn {
-    background: #4CAF50;
-    color: #ffffff;
-}
-
-.delete-btn {
-    background: #f44336;
-    color: #ffffff;
-}
-
 /* Контейнер штрихкода */
 .card-back {
     width: 100%;
