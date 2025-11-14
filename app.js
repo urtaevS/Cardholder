@@ -1,7 +1,7 @@
 // ===== ИНИЦИАЛИЗАЦИЯ TELEGRAM =====
 const tg = window.Telegram?.WebApp || {};
-if (tg.expand) tg.expand();
-if (tg.ready) tg.ready();
+tg.expand?.();
+tg.ready?.();
 
 // ===== СОСТОЯНИЕ =====
 const STORAGE_KEY = 'loyaltyCards';
@@ -12,23 +12,29 @@ let currentCardId = null;
 let editingCardId = null;
 
 // ===== DOM =====
-const addCardBtn = document.getElementById('addCardBtn');
-const addModal   = document.getElementById('addModal');
-const viewModal  = document.getElementById('viewModal');
-const editModal  = document.getElementById('editModal');
-const exportModal= document.getElementById('exportModal');
+const addCardBtn       = document.getElementById('addCardBtn');
+const addModal         = document.getElementById('addModal');
+const viewModal        = document.getElementById('viewModal');
+const editModal        = document.getElementById('editModal');
+const exportModal      = document.getElementById('exportModal');
+const importModal      = document.getElementById('importModal');
 
-const cardsGrid  = document.getElementById('cardsGrid');
+const cardsGrid        = document.getElementById('cardsGrid');
 
-const saveCardBtn= document.getElementById('saveCardBtn');
-const cameraBtn  = document.getElementById('cameraBtn');
-const uploadBtn  = document.getElementById('uploadBtn');
-const fileInput  = document.getElementById('fileInput');
+const saveCardBtn      = document.getElementById('saveCardBtn');
+const cameraBtn        = document.getElementById('cameraBtn');
+const uploadBtn        = document.getElementById('uploadBtn');
+const fileInput        = document.getElementById('fileInput');
 
-const importBtn  = document.getElementById('importBtn');
-const exportBtn  = document.getElementById('exportBtn');
-const importInput= document.getElementById('importInput');
-const copyExportBtn = document.getElementById('copyExportBtn');
+const importBtn        = document.getElementById('importBtn');
+const exportBtn        = document.getElementById('exportBtn');
+const importInput      = document.getElementById('importInput');
+
+const copyExportBtn        = document.getElementById('copyExportBtn');
+const importFromFileBtn    = document.getElementById('importFromFileBtn');
+const importFromJsonBtn    = document.getElementById('importFromJsonBtn');
+const importJsonTextarea   = document.getElementById('importJsonTextarea');
+const applyImportJsonBtn   = document.getElementById('applyImportJsonBtn');
 
 // ===== LOCALSTORAGE =====
 function loadCards() {
@@ -76,6 +82,7 @@ window.addEventListener('click', (e) => {
     if (e.target === viewModal) closeModal(viewModal);
     if (e.target === editModal) closeModal(editModal);
     if (e.target === exportModal) closeModal(exportModal);
+    if (e.target === importModal) closeModal(importModal);
 });
 
 // ===== ВЫБОР ЦВЕТА =====
@@ -84,7 +91,8 @@ function setupColorPicker(containerId) {
     container.querySelectorAll('.color-option').forEach(opt => {
         opt.addEventListener('click', () => {
             selectedColor = opt.dataset.color;
-            container.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+            container.querySelectorAll('.color-option')
+                .forEach(o => o.classList.remove('selected'));
             opt.classList.add('selected');
         });
     });
@@ -194,7 +202,7 @@ function viewCard(id) {
     openModal(viewModal);
 }
 
-// ===== РЕДАКТИРОВАНИЕ =====
+// ===== РЕДАКТИРОВАНИЕ КАРТЫ =====
 document.getElementById('editBtn').addEventListener('click', () => {
     if (!currentCardId) return;
     editingCardId = currentCardId;
@@ -231,7 +239,7 @@ document.getElementById('saveEditBtn').addEventListener('click', () => {
     tg.showAlert?.('Изменения сохранены');
 });
 
-// ===== УДАЛЕНИЕ =====
+// ===== УДАЛЕНИЕ КАРТЫ =====
 document.getElementById('deleteBtn').addEventListener('click', () => {
     if (!currentCardId) return;
 
@@ -251,38 +259,18 @@ document.getElementById('deleteBtn').addEventListener('click', () => {
     }
 });
 
-// ===== ЭКСПОРТ =====
+// ===== ЭКСПОРТ: JSON + копирование =====
 exportBtn.addEventListener('click', () => {
-    if (!cards.length) {
+    if (!cards || !cards.length) {
         tg.showAlert?.('Нет карт для экспорта');
         return;
     }
 
     const dataStr = JSON.stringify(cards, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const fileName = `loyalty-cards-${new Date().toISOString().split('T')[0]}.json`;
+    const ta = document.getElementById('exportData');
+    ta.value = dataStr;
 
-    // Если это не Telegram (initData нет или platform unknown) — обычный download
-    if (!tg.initData || tg.platform === 'unknown') {
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }, 100);
-        tg.showAlert?.('Файл экспортирован');
-        return;
-    }
-
-    // В Telegram: прямой download заблокирован, показываем JSON
-    URL.revokeObjectURL(url);
-    document.getElementById('exportData').value = dataStr;
-    openModal(exportModal);
+    exportModal.style.display = 'flex';
 });
 
 copyExportBtn.addEventListener('click', () => {
@@ -298,24 +286,37 @@ copyExportBtn.addEventListener('click', () => {
     }
 
     if (!copied && navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(ta.value).then(() => {
-            copied = true;
-            tg.showAlert?.('Данные скопированы. Вставьте их в «Избранное» и сохраните как .json');
-        }).catch(() => {
-            tg.showAlert?.('Выделите текст и скопируйте вручную');
-        });
+        navigator.clipboard.writeText(ta.value)
+            .then(() => {
+                copied = true;
+                tg.showAlert?.('JSON скопирован. Сохраните его как файл .json');
+            })
+            .catch(() => {
+                tg.showAlert?.('Выделите текст и скопируйте вручную');
+            });
     } else {
         if (copied) {
-            tg.showAlert?.('Данные скопированы. Вставьте их в «Избранное» и сохраните как .json');
+            tg.showAlert?.('JSON скопирован. Сохраните его как файл .json');
         } else {
             tg.showAlert?.('Выделите текст и скопируйте вручную');
         }
     }
-    closeModal(exportModal);
+
+    exportModal.style.display = 'none';
 });
 
-// ===== ИМПОРТ =====
-importBtn.addEventListener('click', () => importInput.click());
+// ===== ИМПОРТ: модалка (файл + ручной JSON) =====
+importBtn.addEventListener('click', () => {
+    importJsonTextarea.style.display = 'none';
+    importJsonTextarea.value = '';
+    applyImportJsonBtn.style.display = 'none';
+    importModal.style.display = 'flex';
+});
+
+// Импорт из файла
+importFromFileBtn.addEventListener('click', () => {
+    importInput.click();
+});
 
 importInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -326,11 +327,13 @@ importInput.addEventListener('change', (e) => {
         try {
             const imported = JSON.parse(ev.target.result);
             if (!Array.isArray(imported)) {
-                tg.showAlert?.('Неверный формат файла (ожидается массив)');
+                tg.showAlert?.('Неверный формат файла (ожидается массив карт)');
                 return;
             }
+
             const existingIds = new Set(cards.map(c => c.id));
             let added = 0;
+
             imported.forEach(src => {
                 if (!src || typeof src !== 'object') return;
                 const id = src.id || Date.now() + Math.random();
@@ -344,16 +347,66 @@ importInput.addEventListener('change', (e) => {
                 });
                 added++;
             });
+
             saveCards();
             renderCards();
             tg.showAlert?.(`Импортировано карт: ${added}`);
+            importModal.style.display = 'none';
         } catch (err) {
-            console.error('import error:', err);
+            console.error('import from file error:', err);
             tg.showAlert?.('Ошибка чтения файла. Проверьте JSON');
         }
     };
+
     reader.readAsText(file);
     importInput.value = '';
+});
+
+// Импорт из вставленного JSON
+importFromJsonBtn.addEventListener('click', () => {
+    importJsonTextarea.style.display = 'block';
+    applyImportJsonBtn.style.display = 'block';
+});
+
+applyImportJsonBtn.addEventListener('click', () => {
+    const text = importJsonTextarea.value.trim();
+    if (!text) {
+        tg.showAlert?.('Вставьте JSON в поле');
+        return;
+    }
+
+    try {
+        const imported = JSON.parse(text);
+        if (!Array.isArray(imported)) {
+            tg.showAlert?.('Неверный формат JSON (ожидается массив карт)');
+            return;
+        }
+
+        const existingIds = new Set(cards.map(c => c.id));
+        let added = 0;
+
+        imported.forEach(src => {
+            if (!src || typeof src !== 'object') return;
+            const id = src.id || Date.now() + Math.random();
+            if (existingIds.has(id)) return;
+            existingIds.add(id);
+            cards.push({
+                id,
+                name: src.name || 'Без названия',
+                barcode: src.barcode || '',
+                color: src.color || '#FF6B6B'
+            });
+            added++;
+        });
+
+        saveCards();
+        renderCards();
+        tg.showAlert?.(`Импортировано карт: ${added}`);
+        importModal.style.display = 'none';
+    } catch (err) {
+        console.error('import from JSON textarea error:', err);
+        tg.showAlert?.('Ошибка парсинга JSON. Проверьте формат');
+    }
 });
 
 // ===== СТАРТ =====
