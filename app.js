@@ -17,6 +17,7 @@ const addCardBtn = document.getElementById('addCardBtn');
 const addModal = document.getElementById('addModal');
 const viewModal = document.getElementById('viewModal');
 const editModal = document.getElementById('editModal');
+const exportModal = document.getElementById('exportModal');
 const cardsGrid = document.getElementById('cardsGrid');
 const saveCardBtn = document.getElementById('saveCardBtn');
 const cameraBtn = document.getElementById('cameraBtn');
@@ -224,64 +225,120 @@ document.getElementById('deleteBtn').addEventListener('click', () => {
     });
 });
 
-// Экспорт карт в файл
+// Экспорт карт с использованием официального API Telegram
 exportBtn.addEventListener('click', () => {
+    if (cards.length === 0) {
+        tg.showAlert('Нет карт для экспорта');
+        return;
+    }
+    
     const dataStr = JSON.stringify(cards, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
     const url = URL.createObjectURL(dataBlob);
+    const fileName = `loyalty-cards-${new Date().toISOString().split('T')[0]}.json`;
     
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'loyalty_cards.json';
-    link.style.display = 'none';
-    
-    document.body.appendChild(link);
-    
-    // Используем dispatchEvent для совместимости с Firefox и мобильными браузерами
-    link.dispatchEvent(
-        new MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            view: window
-        })
-    );
-    
-    // Задержка перед удалением ссылки для Firefox
-    setTimeout(() => {
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    }, 100);
-    
-    tg.showAlert('Файл экспортирован');
+    // Проверяем наличие метода downloadFile (Bot API 8.0+)
+    if (typeof tg.downloadFile === 'function') {
+        // Используем официальный метод Telegram для скачивания
+        tg.downloadFile({
+            url: url,
+            file_name: fileName
+        }, (result) => {
+            URL.revokeObjectURL(url);
+            if (result) {
+                tg.showAlert('Файл загружен');
+            } else {
+                tg.showAlert('Загрузка отменена');
+            }
+        });
+    } else {
+        // Fallback для старых версий или веб-браузера
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        
+        try {
+            link.dispatchEvent(new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+            }));
+            
+            setTimeout(() => {
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            // Проверяем, сработало ли скачивание
+            setTimeout(() => {
+                // Если мы всё ещё в Telegram (platform не unknown), показываем fallback
+                if (tg.platform !== 'unknown') {
+                    document.getElementById('exportData').value = dataStr;
+                    exportModal.style.display = 'flex';
+                } else {
+                    tg.showAlert('Файл экспортирован');
+                }
+            }, 500);
+        } catch (e) {
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            // Показываем модальное окно для копирования
+            document.getElementById('exportData').value = dataStr;
+            exportModal.style.display = 'flex';
+        }
+    }
 });
 
-// Импорт карт из файла
+// Копирование данных экспорта в буфер обмена
+document.getElementById('copyExportBtn').addEventListener('click', () => {
+    const exportData = document.getElementById('exportData');
+    exportData.select();
+    exportData.setSelectionRange(0, 99999);
+    
+    try {
+        document.execCommand('copy');
+        tg.showAlert('Данные скопированы! Вставьте их в "Избранное" Telegram и сохраните как .json файл');
+        exportModal.style.display = 'none';
+    } catch (err) {
+        navigator.clipboard.writeText(exportData.value).then(() => {
+            tg.showAlert('Данные скопированы! Вставьте их в "Избранное" Telegram и сохраните');
+            exportModal.style.display = 'none';
+        }).catch(() => {
+            tg.showAlert('Выделите текст и скопируйте вручную (долгое нажатие → Копировать)');
+        });
+    }
+});
+
+// Импорт карт из JSON-файла
 importBtn.addEventListener('click', () => {
     importInput.click();
 });
 
 importInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-                const importedCards = JSON.parse(event.target.result);
-                if (Array.isArray(importedCards)) {
-                    cards = [...cards, ...importedCards];
-                    saveCards();
-                    renderCards();
-                    tg.showAlert(`Импортировано карт: ${importedCards.length}`);
-                } else {
-                    tg.showAlert('Неверный формат файла');
-                }
-            } catch (error) {
-                tg.showAlert('Ошибка чтения файла. Убедитесь, что это корректный JSON');
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const importedCards = JSON.parse(event.target.result);
+            if (Array.isArray(importedCards)) {
+                // Объединяем с существующими картами
+                cards = [...cards, ...importedCards];
+                saveCards();
+                renderCards();
+                tg.showAlert(`Импортировано карт: ${importedCards.length}`);
+            } else {
+                tg.showAlert('Неверный формат файла');
             }
-        };
-        reader.readAsText(file);
-    }
-    // Сброс значения input для возможности повторного выбора того же файла
+        } catch (err) {
+            tg.showAlert('Ошибка чтения файла. Убедитесь, что это корректный JSON');
+        }
+    };
+    reader.readAsText(file);
+    // Сброс значения для возможности повторного импорта
     importInput.value = '';
 });
 
@@ -295,6 +352,7 @@ window.addEventListener('click', (e) => {
     if (e.target === addModal) addModal.style.display = 'none';
     if (e.target === viewModal) viewModal.style.display = 'none';
     if (e.target === editModal) editModal.style.display = 'none';
+    if (e.target === exportModal) exportModal.style.display = 'none';
 });
 
 // Инициализация
