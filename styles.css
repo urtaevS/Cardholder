@@ -203,43 +203,75 @@ body {
 .card-view {
     max-width: 350px;
     position: relative;
+    padding: 0;
+    background: transparent;
 }
 
+/* Кнопка "назад" только стрелкой */
 .back-btn {
     position: absolute;
     top: 12px;
     left: 16px;
     z-index: 2;
-    padding: 6px 12px;
-    border-radius: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
     border: none;
-    background: var(--tg-theme-button-color, #3390ec);
-    color: var(--tg-theme-button-text-color, #ffffff);
-    font-size: 14px;
+    background: rgba(0,0,0,0.25);
+    color: #ffffff;
+    font-size: 18px;
+    line-height: 1;
     cursor: pointer;
 }
 
+/* Тело карты */
 .card-view-body {
     padding-top: 40px;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     gap: 12px;
-    cursor: pointer; /* чтобы было видно, что можно нажать */
+    cursor: pointer;
+    border-radius: 16px;
+    overflow: hidden;
 }
 
+/* Кнопки редактирования/удаления сверху справа, маленькие */
 .card-view-actions {
     position: absolute;
     top: 12px;
     right: 16px;
     display: flex;
-    gap: 8px;
+    gap: 6px;
 }
 
+.action-btn {
+    padding: 6px 8px;
+    border: none;
+    border-radius: 999px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.action-btn:active {
+    opacity: 0.7;
+}
+
+.edit-btn {
+    background: #4CAF50;
+    color: #ffffff;
+}
+
+.delete-btn {
+    background: #f44336;
+    color: #ffffff;
+}
+
+/* Верхняя цветная полоса с названием (заливка цветом карты) */
 .card-front {
     width: 100%;
-    border-radius: 12px;
-    padding: 16px;
+    padding: 12px 16px;
+    background: #004f8a; /* по умолчанию, будет переопределено из JS */
     color: #ffffff;
     text-align: center;
 }
@@ -249,12 +281,12 @@ body {
     margin: 0;
 }
 
+/* Белый блок со штрихкодом */
 .card-back {
     width: 100%;
-    border-radius: 12px;
     padding: 16px;
     background: #ffffff;
-    border: 2px solid #eeeeee;
+    border-radius: 0 0 16px 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -279,29 +311,6 @@ body {
 .card-actions {
     display: flex;
     gap: 12px;
-}
-
-.action-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 20px;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.action-btn:active {
-    opacity: 0.7;
-}
-
-.edit-btn {
-    background: #4CAF50;
-    color: #ffffff;
-}
-
-.delete-btn {
-    background: #f44336;
-    color: #ffffff;
 }
 
 .export-textarea {
