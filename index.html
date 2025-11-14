@@ -57,22 +57,22 @@
             <div class="card-popup-header" id="cardPopupHeader">
                 <button class="back-btn" id="backFromViewBtn">←</button>
                 <h2 id="viewCardName"></h2>
+                <!-- Дополнительный крестик закрытия -->
                 <button class="close-view" id="closeViewBtn">&times;</button>
             </div>
 
             <!-- Белое поле со штрихкодом и номером -->
             <div class="card-popup-body" id="cardViewBody">
-                <div class="card-view-actions">
-                    <button class="action-btn edit-btn" id="editBtn">✏️</button>
-                    <button class="action-btn delete-btn" id="deleteBtn">❌</button>
-                </div>
-
                 <div class="card-back" id="cardBack">
                     <svg id="barcodeSvg"></svg>
                     <p id="barcodeText"></p>
                 </div>
 
-                <button class="btn" id="copyNumberBtn">📋 Скопировать номер</button>
+                <!-- Кнопка копирования номера временно выключена -->
+                <!-- <button class="btn" id="copyNumberBtn">📋 Скопировать номер</button> -->
+
+                <!-- Новая кнопка: переход в режим редактирования -->
+                <button class="btn" id="editModeBtn">✏️ Режим редактирования</button>
             </div>
         </div>
     </div>
