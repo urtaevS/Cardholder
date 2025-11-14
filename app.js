@@ -1,9 +1,7 @@
-// ===== БАЗОВАЯ ИНИЦИАЛИЗАЦИЯ =====
+// ===== ИНИЦИАЛИЗАЦИЯ TELEGRAM =====
 const tg = window.Telegram?.WebApp || {};
 if (tg.expand) tg.expand();
 if (tg.ready) tg.ready();
-
-document.body.style.backgroundColor = tg.backgroundColor || '#ffffff';
 
 // ===== СОСТОЯНИЕ =====
 const STORAGE_KEY = 'loyaltyCards';
@@ -13,26 +11,26 @@ let selectedColor = '#FF6B6B';
 let currentCardId = null;
 let editingCardId = null;
 
-// ===== DOM ЭЛЕМЕНТЫ =====
+// ===== DOM =====
 const addCardBtn = document.getElementById('addCardBtn');
-const addModal = document.getElementById('addModal');
-const viewModal = document.getElementById('viewModal');
-const editModal = document.getElementById('editModal');
-const exportModal = document.getElementById('exportModal');
+const addModal   = document.getElementById('addModal');
+const viewModal  = document.getElementById('viewModal');
+const editModal  = document.getElementById('editModal');
+const exportModal= document.getElementById('exportModal');
 
-const cardsGrid = document.getElementById('cardsGrid');
-const saveCardBtn = document.getElementById('saveCardBtn');
-const cameraBtn = document.getElementById('cameraBtn');
-const uploadBtn = document.getElementById('uploadBtn');
-const fileInput = document.getElementById('fileInput');
+const cardsGrid  = document.getElementById('cardsGrid');
 
-const importBtn = document.getElementById('importBtn');
-const exportBtn = document.getElementById('exportBtn');
-const importInput = document.getElementById('importInput');
+const saveCardBtn= document.getElementById('saveCardBtn');
+const cameraBtn  = document.getElementById('cameraBtn');
+const uploadBtn  = document.getElementById('uploadBtn');
+const fileInput  = document.getElementById('fileInput');
 
+const importBtn  = document.getElementById('importBtn');
+const exportBtn  = document.getElementById('exportBtn');
+const importInput= document.getElementById('importInput');
 const copyExportBtn = document.getElementById('copyExportBtn');
 
-// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ХРАНИЛИЩА =====
+// ===== LOCALSTORAGE =====
 function loadCards() {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -43,48 +41,33 @@ function loadCards() {
         const parsed = JSON.parse(raw);
         cards = Array.isArray(parsed) ? parsed : [];
     } catch (e) {
-        console.error('Ошибка чтения localStorage:', e);
+        console.error('loadCards error:', e);
         cards = [];
     }
 }
 
 function saveCards() {
     try {
-        const str = JSON.stringify(cards);
-        localStorage.setItem(STORAGE_KEY, str);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
     } catch (e) {
-        console.error('Ошибка записи localStorage:', e);
+        console.error('saveCards error:', e);
     }
-}
-
-// ===== UI: ОТРИСОВКА =====
-function renderCards() {
-    cardsGrid.innerHTML = '';
-    cards.forEach(card => {
-        const el = document.createElement('div');
-        el.className = 'card';
-        el.style.background = card.color;
-        el.innerHTML = `<h3>${card.name}</h3>`;
-        el.addEventListener('click', () => viewCard(card.id));
-        cardsGrid.appendChild(el);
-    });
 }
 
 // ===== МОДАЛЫ =====
 function openModal(modal) {
     if (modal) modal.style.display = 'flex';
 }
-
 function closeModal(modal) {
     if (modal) modal.style.display = 'none';
 }
 
 document.querySelectorAll('.close').forEach(btn => {
     btn.addEventListener('click', () => {
-        const targetId = btn.dataset.target;
-        if (targetId) {
-            closeModal(document.getElementById(targetId));
-        }
+        const id = btn.dataset.target;
+        if (!id) return;
+        const modal = document.getElementById(id);
+        closeModal(modal);
     });
 });
 
@@ -98,11 +81,11 @@ window.addEventListener('click', (e) => {
 // ===== ВЫБОР ЦВЕТА =====
 function setupColorPicker(containerId) {
     const container = document.getElementById(containerId);
-    container.querySelectorAll('.color-option').forEach(option => {
-        option.addEventListener('click', () => {
-            selectedColor = option.dataset.color;
+    container.querySelectorAll('.color-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            selectedColor = opt.dataset.color;
             container.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
-            option.classList.add('selected');
+            opt.classList.add('selected');
         });
     });
 }
@@ -111,6 +94,19 @@ function setSelectedColor(containerId, color) {
     const container = document.getElementById(containerId);
     container.querySelectorAll('.color-option').forEach(o => {
         o.classList.toggle('selected', o.dataset.color === color);
+    });
+}
+
+// ===== ОТРИСОВКА КАРТ =====
+function renderCards() {
+    cardsGrid.innerHTML = '';
+    cards.forEach(card => {
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.style.background = card.color;
+        el.innerHTML = `<h3>${card.name}</h3>`;
+        el.addEventListener('click', () => viewCard(card.id));
+        cardsGrid.appendChild(el);
     });
 }
 
@@ -123,19 +119,17 @@ addCardBtn.addEventListener('click', () => {
     openModal(addModal);
 });
 
-// Камера (демо: просто выбираем файл)
 cameraBtn.addEventListener('click', () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.capture = 'environment';
-    input.onchange = (e) => {
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'image/*';
+    inp.capture = 'environment';
+    inp.onchange = (e) => {
         if (e.target.files[0]) processBarcodeImage(e.target.files[0]);
     };
-    input.click();
+    inp.click();
 });
 
-// Выбор файла с фото штрихкода
 uploadBtn.addEventListener('click', () => fileInput.click());
 
 fileInput.addEventListener('change', (e) => {
@@ -148,7 +142,7 @@ function processBarcodeImage(file) {
     reader.onload = () => {
         const randomBarcode = String(Math.floor(Math.random() * 1e12)).padStart(12, '0');
         document.getElementById('barcodeNumber').value = randomBarcode;
-        if (tg.showAlert) tg.showAlert('Штрихкод распознан (демо)');
+        tg.showAlert?.('Штрихкод распознан (демо)');
     };
     reader.readAsDataURL(file);
 }
@@ -158,7 +152,7 @@ saveCardBtn.addEventListener('click', () => {
     const barcode = document.getElementById('barcodeNumber').value.trim();
 
     if (!name || !barcode) {
-        if (tg.showAlert) tg.showAlert('Заполните все поля');
+        tg.showAlert?.('Заполните все поля');
         return;
     }
 
@@ -173,7 +167,7 @@ saveCardBtn.addEventListener('click', () => {
     saveCards();
     renderCards();
     closeModal(addModal);
-    if (tg.showAlert) tg.showAlert('Карта добавлена');
+    tg.showAlert?.('Карта добавлена');
 });
 
 // ===== ПРОСМОТР КАРТЫ =====
@@ -194,13 +188,13 @@ function viewCard(id) {
             displayValue: false
         });
     } catch (e) {
-        console.error('Ошибка генерации штрихкода:', e);
+        console.error('JsBarcode error:', e);
     }
 
     openModal(viewModal);
 }
 
-// ===== РЕДАКТИРОВАНИЕ КАРТЫ =====
+// ===== РЕДАКТИРОВАНИЕ =====
 document.getElementById('editBtn').addEventListener('click', () => {
     if (!currentCardId) return;
     editingCardId = currentCardId;
@@ -223,51 +217,44 @@ document.getElementById('saveEditBtn').addEventListener('click', () => {
     const barcode = document.getElementById('editBarcodeNumber').value.trim();
 
     if (!name || !barcode) {
-        if (tg.showAlert) tg.showAlert('Заполните все поля');
+        tg.showAlert?.('Заполните все поля');
         return;
     }
 
     const idx = cards.findIndex(c => c.id === editingCardId);
     if (idx === -1) return;
 
-    cards[idx] = {
-        ...cards[idx],
-        name,
-        barcode,
-        color: selectedColor
-    };
-
+    cards[idx] = { ...cards[idx], name, barcode, color: selectedColor };
     saveCards();
     renderCards();
     closeModal(editModal);
-    if (tg.showAlert) tg.showAlert('Изменения сохранены');
+    tg.showAlert?.('Изменения сохранены');
 });
 
-// ===== УДАЛЕНИЕ КАРТЫ =====
+// ===== УДАЛЕНИЕ =====
 document.getElementById('deleteBtn').addEventListener('click', () => {
     if (!currentCardId) return;
 
-    const confirmDelete = (confirmed) => {
-        if (!confirmed) return;
+    const confirmDelete = (ok) => {
+        if (!ok) return;
         cards = cards.filter(c => c.id !== currentCardId);
         saveCards();
         renderCards();
         closeModal(viewModal);
-        if (tg.showAlert) tg.showAlert('Карта удалена');
+        tg.showAlert?.('Карта удалена');
     };
 
     if (tg.showConfirm) {
         tg.showConfirm('Удалить эту карту?', confirmDelete);
     } else {
-        const res = window.confirm('Удалить эту карту?');
-        confirmDelete(res);
+        confirmDelete(window.confirm('Удалить эту карту?'));
     }
 });
 
 // ===== ЭКСПОРТ =====
-function exportCardsToFile() {
+exportBtn.addEventListener('click', () => {
     if (!cards.length) {
-        if (tg.showAlert) tg.showAlert('Нет карт для экспорта');
+        tg.showAlert?.('Нет карт для экспорта');
         return;
     }
 
@@ -276,7 +263,7 @@ function exportCardsToFile() {
     const url = URL.createObjectURL(blob);
     const fileName = `loyalty-cards-${new Date().toISOString().split('T')[0]}.json`;
 
-    // В браузере — обычная загрузка файла
+    // Если это не Telegram (initData нет или platform unknown) — обычный download
     if (!tg.initData || tg.platform === 'unknown') {
         const a = document.createElement('a');
         a.href = url;
@@ -288,27 +275,16 @@ function exportCardsToFile() {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }, 100);
-        if (tg.showAlert) tg.showAlert('Файл экспортирован');
+        tg.showAlert?.('Файл экспортирован');
         return;
     }
 
-    // В Telegram: пытаемся через downloadFile (если реализован) или fallback
-    if (typeof tg.downloadFile === 'function') {
-        tg.downloadFile({ url, file_name: fileName }, (result) => {
-            URL.revokeObjectURL(url);
-            if (result && tg.showAlert) tg.showAlert('Файл загружен');
-        });
-    } else {
-        URL.revokeObjectURL(url);
-        // Fallback: показываем JSON пользователю
-        document.getElementById('exportData').value = dataStr;
-        openModal(exportModal);
-    }
-}
+    // В Telegram: прямой download заблокирован, показываем JSON
+    URL.revokeObjectURL(url);
+    document.getElementById('exportData').value = dataStr;
+    openModal(exportModal);
+});
 
-exportBtn.addEventListener('click', exportCardsToFile);
-
-// Копирование JSON в Telegram
 copyExportBtn.addEventListener('click', () => {
     const ta = document.getElementById('exportData');
     ta.select();
@@ -322,25 +298,24 @@ copyExportBtn.addEventListener('click', () => {
     }
 
     if (!copied && navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(ta.value)
-            .then(() => { copied = true; })
-            .catch(() => { copied = false; });
-    }
-
-    if (tg.showAlert) {
+        navigator.clipboard.writeText(ta.value).then(() => {
+            copied = true;
+            tg.showAlert?.('Данные скопированы. Вставьте их в «Избранное» и сохраните как .json');
+        }).catch(() => {
+            tg.showAlert?.('Выделите текст и скопируйте вручную');
+        });
+    } else {
         if (copied) {
-            tg.showAlert('Данные скопированы. Вставьте в «Избранное» и сохраните как .json');
+            tg.showAlert?.('Данные скопированы. Вставьте их в «Избранное» и сохраните как .json');
         } else {
-            tg.showAlert('Выделите текст и скопируйте вручную (долгое нажатие → Копировать)');
+            tg.showAlert?.('Выделите текст и скопируйте вручную');
         }
     }
     closeModal(exportModal);
 });
 
 // ===== ИМПОРТ =====
-importBtn.addEventListener('click', () => {
-    importInput.click();
-});
+importBtn.addEventListener('click', () => importInput.click());
 
 importInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -351,34 +326,37 @@ importInput.addEventListener('change', (e) => {
         try {
             const imported = JSON.parse(ev.target.result);
             if (!Array.isArray(imported)) {
-                if (tg.showAlert) tg.showAlert('Неверный формат файла');
+                tg.showAlert?.('Неверный формат файла (ожидается массив)');
                 return;
             }
-            // Объединяем без потери существующих
             const existingIds = new Set(cards.map(c => c.id));
-            imported.forEach(card => {
-                if (card && typeof card === 'object' && !existingIds.has(card.id)) {
-                    cards.push({
-                        id: card.id || Date.now() + Math.random(),
-                        name: card.name || 'Без названия',
-                        barcode: card.barcode || '',
-                        color: card.color || '#FF6B6B'
-                    });
-                }
+            let added = 0;
+            imported.forEach(src => {
+                if (!src || typeof src !== 'object') return;
+                const id = src.id || Date.now() + Math.random();
+                if (existingIds.has(id)) return;
+                existingIds.add(id);
+                cards.push({
+                    id,
+                    name: src.name || 'Без названия',
+                    barcode: src.barcode || '',
+                    color: src.color || '#FF6B6B'
+                });
+                added++;
             });
             saveCards();
             renderCards();
-            if (tg.showAlert) tg.showAlert(`Импортировано карт: ${imported.length}`);
+            tg.showAlert?.(`Импортировано карт: ${added}`);
         } catch (err) {
-            console.error('Ошибка парсинга JSON:', err);
-            if (tg.showAlert) tg.showAlert('Ошибка чтения файла. Проверьте JSON');
+            console.error('import error:', err);
+            tg.showAlert?.('Ошибка чтения файла. Проверьте JSON');
         }
     };
     reader.readAsText(file);
     importInput.value = '';
 });
 
-// ===== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАПУСКЕ =====
+// ===== СТАРТ =====
 setupColorPicker('addColors');
 setupColorPicker('editColors');
 loadCards();
