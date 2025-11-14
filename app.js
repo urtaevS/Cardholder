@@ -35,7 +35,9 @@ const applyImportJsonBtn   = document.getElementById('applyImportJsonBtn');
 const copyNumberBtn        = document.getElementById('copyNumberBtn');
 
 const backFromViewBtn      = document.getElementById('backFromViewBtn');
+const closeViewBtn         = document.getElementById('closeViewBtn');
 const cardViewBody         = document.getElementById('cardViewBody');
+const cardPopupHeader      = document.getElementById('cardPopupHeader');
 
 // ===== LOCALSTORAGE =====
 function loadCards() {
@@ -158,7 +160,7 @@ function viewCard(id) {
     if (!card) return;
 
     document.getElementById('viewCardName').textContent = card.name;
-    document.getElementById('cardFront').style.background = card.color;
+    cardPopupHeader.style.background = card.color;
     document.getElementById('barcodeText').textContent = card.barcode;
 
     try {
@@ -180,7 +182,12 @@ backFromViewBtn.addEventListener('click', () => {
     closeModal(viewModal);
 });
 
-// Закрытие по клику на саму карту (кроме кнопок)
+// Крестик
+closeViewBtn.addEventListener('click', () => {
+    closeModal(viewModal);
+});
+
+// Закрытие по клику на тело модалки (кроме кнопок)
 cardViewBody.addEventListener('click', (e) => {
     const target = e.target;
 
