@@ -22,7 +22,7 @@ const importModal      = document.getElementById('importModal');
 const cardsGrid        = document.getElementById('cardsGrid');
 
 const saveCardBtn      = document.getElementById('saveCardBtn');
-const cameraBtn        = document.getElementById('cameraBtn');
+// const cameraBtn      = document.getElementById('cameraBtn'); // камеры больше нет
 const uploadBtn        = document.getElementById('uploadBtn');
 const fileInput        = document.getElementById('fileInput');
 
@@ -127,82 +127,20 @@ addCardBtn.addEventListener('click', () => {
     openModal(addModal);
 });
 
-// КАМЕРА: сначала пробуем getUserMedia, затем fallback на input+capture
-cameraBtn.addEventListener('click', async () => {
-    if (navigator.mediaDevices?.getUserMedia) {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: { ideal: 'environment' }
-                }
-            });
-
-            const video = document.createElement('video');
-            video.style.position = 'fixed';
-            video.style.left = '-9999px';
-            video.setAttribute('playsinline', 'true');
-            document.body.appendChild(video);
-
-            video.srcObject = stream;
-            await video.play();
-
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth || 1280;
-            canvas.height = video.videoHeight || 720;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            stream.getTracks().forEach(t => t.stop());
-            document.body.removeChild(video);
-
-            canvas.toBlob((blob) => {
-                if (!blob) {
-                    tg.showAlert?.('Не удалось получить фото с камеры');
-                    return;
-                }
-                const file = new File([blob], 'camera.jpg', { type: 'image/jpeg' });
-                processBarcodeImage(file);
-            }, 'image/jpeg', 0.9);
-
-            return;
-        } catch (err) {
-            console.warn('getUserMedia error, fallback to input capture:', err);
-        }
-    }
-
-    // Fallback: input type="file" с capture
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.setAttribute('capture', 'environment');
-    input.style.display = 'none';
-    document.body.appendChild(input);
-
-    input.onchange = (e) => {
-        const file = e.target.files && e.target.files[0];
-        if (file) {
-            processBarcodeImage(file);
-        }
-        document.body.removeChild(input);
-    };
-
-    input.click();
-});
-
-// Загрузка файла из галереи
+// Загрузка файла из медиа/галереи
 uploadBtn.addEventListener('click', () => fileInput.click());
 
 fileInput.addEventListener('change', (e) => {
     if (e.target.files[0]) processBarcodeImage(e.target.files[0]);
 });
 
-// Заглушка распознавания штрихкода
+// Обработка изображения карты (сейчас только чтение, без распознавания)
 function processBarcodeImage(file) {
     const reader = new FileReader();
     reader.onload = () => {
-        const randomBarcode = String(Math.floor(Math.random() * 1e12)).padStart(12, '0');
-        document.getElementById('barcodeNumber').value = randomBarcode;
-        tg.showAlert?.('Штрихкод распознан (демо)');
+        const dataUrl = reader.result;
+        console.log('Фото карты загружено, длина dataURL:', typeof dataUrl === 'string' ? dataUrl.length : 0);
+        // Здесь можно будет добавить реальное распознавание штрихкода по изображению.
     };
     reader.readAsDataURL(file);
 }
