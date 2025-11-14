@@ -137,6 +137,12 @@ body {
     font-size: 20px;
 }
 
+.modal-content p {
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: var(--tg-theme-hint-color, #999);
+}
+
 .input-field {
     width: 100%;
     padding: 12px;
@@ -270,4 +276,18 @@ body {
 .delete-btn {
     background: #f44336;
     color: white;
+}
+
+.export-textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 12px;
+    margin-bottom: 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: monospace;
+    background: var(--tg-theme-bg-color, #f5f5f5);
+    color: var(--tg-theme-text-color, #000000);
+    resize: vertical;
 }
