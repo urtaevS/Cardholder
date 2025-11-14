@@ -199,20 +199,35 @@ body {
     width: 100%;
 }
 
-/* Экран просмотра карты */
-.card-view {
-    max-width: 350px;
-    position: relative;
+/* ----- Модалка штрихкода ----- */
+
+.card-popup {
     padding: 0;
-    background: transparent;
+    border-radius: 16px;
+    overflow: hidden;
 }
 
-/* Кнопка "назад" только стрелкой */
+/* Верхняя цветная полоса */
+.card-popup-header {
+    position: relative;
+    padding: 16px 48px;
+    background: #ff5a5a; /* по умолчанию, переписывается из JS цветом карты */
+    color: #ffffff;
+    text-align: center;
+}
+
+.card-popup-header h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+/* Красивая стрелка "назад" */
 .back-btn {
     position: absolute;
-    top: 12px;
     left: 16px;
-    z-index: 2;
+    top: 50%;
+    transform: translateY(-50%);
     padding: 6px 10px;
     border-radius: 999px;
     border: none;
@@ -223,19 +238,31 @@ body {
     cursor: pointer;
 }
 
-/* Тело карты */
-.card-view-body {
-    padding-top: 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+/* Крестик справа */
+.close-view {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 24px;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    color: #ffffff;
     cursor: pointer;
-    border-radius: 16px;
-    overflow: hidden;
 }
 
-/* Кнопки редактирования/удаления сверху справа, маленькие */
+/* Белое поле со штрихкодом */
+.card-popup-body {
+    background: #ffffff;
+    padding: 24px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Маленькие кнопки редактирования/удаления сверху справа */
 .card-view-actions {
     position: absolute;
     top: 12px;
@@ -267,29 +294,16 @@ body {
     color: #ffffff;
 }
 
-/* Верхняя цветная полоса с названием (заливка цветом карты) */
-.card-front {
-    width: 100%;
-    padding: 12px 16px;
-    background: #004f8a; /* по умолчанию, будет переопределено из JS */
-    color: #ffffff;
-    text-align: center;
-}
-
-.card-front h2 {
-    font-size: 20px;
-    margin: 0;
-}
-
-/* Белый блок со штрихкодом */
+/* Контейнер штрихкода */
 .card-back {
     width: 100%;
+    border-radius: 12px;
     padding: 16px;
     background: #ffffff;
-    border-radius: 0 0 16px 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 #barcodeSvg {
@@ -299,18 +313,14 @@ body {
 
 #barcodeText {
     font-family: monospace;
-    font-size: 14px;
-    margin-bottom: 8px;
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: #000000;
 }
 
 #copyNumberBtn {
     width: auto;
-    margin-bottom: 8px;
-}
-
-.card-actions {
-    display: flex;
-    gap: 12px;
+    margin-top: 4px;
 }
 
 .export-textarea {
