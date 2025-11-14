@@ -22,7 +22,7 @@
 
     <div class="cards-grid" id="cardsGrid"></div>
 
-    <!-- Добавление карты -->
+    <!-- Модальное окно добавления карты -->
     <div class="modal" id="addModal">
         <div class="modal-content">
             <span class="close" data-target="addModal">&times;</span>
@@ -56,7 +56,7 @@
         </div>
     </div>
 
-    <!-- Просмотр карты -->
+    <!-- Модальное окно просмотра карты -->
     <div class="modal" id="viewModal">
         <div class="modal-content card-view">
             <span class="close" data-target="viewModal">&times;</span>
@@ -74,7 +74,7 @@
         </div>
     </div>
 
-    <!-- Редактирование карты -->
+    <!-- Модальное окно редактирования карты -->
     <div class="modal" id="editModal">
         <div class="modal-content">
             <span class="close" data-target="editModal">&times;</span>
@@ -102,14 +102,37 @@
         </div>
     </div>
 
-    <!-- Экспорт для Telegram (текст) -->
+    <!-- Модальное окно экспорта JSON -->
     <div class="modal" id="exportModal">
         <div class="modal-content">
             <span class="close" data-target="exportModal">&times;</span>
             <h2>Экспорт карт</h2>
-            <p>В Telegram загрузка файлов из мини‑приложений ограничена. Скопируйте текст ниже и сохраните его как .json (например, в «Избранном»).</p>
+            <p>Скопируйте JSON и сохраните его как файл .json (например, в «Избранном» или заметках).</p>
             <textarea id="exportData" class="export-textarea" readonly></textarea>
             <button class="btn btn-primary" id="copyExportBtn">📋 Копировать</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно импорта (файл или JSON) -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <span class="close" data-target="importModal">&times;</span>
+            <h2>Импорт карт</h2>
+            <p>Выберите способ импорта: из файла .json или вставкой JSON‑текста.</p>
+
+            <div class="import-actions">
+                <button class="btn" id="importFromFileBtn">📁 Импорт из файла</button>
+                <button class="btn" id="importFromJsonBtn">📋 Вставить JSON</button>
+            </div>
+
+            <textarea id="importJsonTextarea"
+                      class="export-textarea"
+                      placeholder="Вставьте сюда JSON (Ctrl+V или долгое нажатие → Вставить)..."
+                      style="display:none;"></textarea>
+
+            <button class="btn btn-primary" id="applyImportJsonBtn" style="display:none;">
+                ✅ Импортировать из JSON
+            </button>
         </div>
     </div>
 
