@@ -38,7 +38,7 @@ body {
     display: flex;
     gap: 8px;
     margin-bottom: 16px;
-    transition: max-height 0.2s ease, opacity 0.2s ease;
+    transition: max-height 0.2s ease, opacity 0.2s ease, margin-bottom 0.2s ease;
 }
 
 .actions-panel.hidden {
@@ -55,19 +55,31 @@ body {
 
 /* Кнопки в панели */
 .icon-btn {
-    background: var(--tg-theme-button-color, #3390ec);
-    color: var(--tg-theme-button-text-color, #ffffff);
-    border: none;
-    border-radius: 8px;
-    padding: 8px 12px;
+    background: transparent; /* убираем фон */
+    color: var(--tg-theme-button-color, #3390ec); /* цвет иконки и текста = цвет кнопки темы */
+    border: 2px solid var(--tg-theme-button-color, #3390ec); /* только рамка */
+    border-radius: 6px;
+    padding: 6px 10px;
     font-size: 18px;
     cursor: pointer;
-    transition: opacity 0.2s, background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s, opacity 0.15s;
 }
 
 .icon-btn:active {
     opacity: 0.7;
 }
+
+/* Подсветка кнопки режима редактирования */
+.icon-btn.edit-active {
+    color: var(--tg-theme-bg-color, #ffffff); /* иконка/текст светлые */
+    background: var(--tg-theme-button-color, #3390ec);
+    border-color: var(--tg-theme-button-color, #3390ec);
+}
+
 
 /* Подсветка кнопки режима редактирования */
 .icon-btn.edit-active {
@@ -292,6 +304,7 @@ body {
     gap: 12px;
 }
 
+/* Контейнер штрихкода */
 .card-back {
     width: 100%;
     border-radius: 12px;
