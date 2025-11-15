@@ -183,6 +183,13 @@ saveCardBtn.addEventListener('click', () => {
 actionsToggleBtn.addEventListener('click', () => {
     const hidden = actionsPanel.classList.toggle('hidden');
     actionsToggleBtn.textContent = hidden ? '▾' : '▴';
+
+    // Если панель свернули — выходим из режима редактирования
+    if (hidden && editMode) {
+        editMode = false;
+        editModeToggleBtn.classList.remove('edit-active');
+        editModeLabel.style.display = 'none';
+    }
 });
 
 // ===== РЕЖИМ РЕДАКТИРОВАНИЯ НА ГЛАВНОЙ =====
@@ -191,9 +198,6 @@ editModeToggleBtn.addEventListener('click', () => {
 
     editModeToggleBtn.classList.toggle('edit-active', editMode);
     editModeLabel.style.display = editMode ? 'block' : 'none';
-
-    // Убрали всплывающие окна Telegram,
-    // теперь режим понятен по цвету кнопки и жёлтому тексту.
 });
 
 // Открыть редактор для выбранной карты
