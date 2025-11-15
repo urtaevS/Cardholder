@@ -41,6 +41,9 @@ const closeViewBtn         = document.getElementById('closeViewBtn');
 const cardViewBody         = document.getElementById('cardViewBody');
 const cardPopupHeader      = document.getElementById('cardPopupHeader');
 
+const actionsPanel         = document.getElementById('actionsPanel');
+const actionsToggleBtn     = document.getElementById('actionsToggleBtn');
+
 // поясняющий лейбл режима редактирования
 let editModeLabel = document.getElementById('editModeLabel');
 if (!editModeLabel) {
@@ -176,6 +179,12 @@ saveCardBtn.addEventListener('click', () => {
     tg.showAlert?.('Карта добавлена');
 });
 
+// ===== СВОРАЧИВАЕМАЯ ПАНЕЛЬ ДЕЙСТВИЙ =====
+actionsToggleBtn.addEventListener('click', () => {
+    const hidden = actionsPanel.classList.toggle('hidden');
+    actionsToggleBtn.textContent = hidden ? '▾' : '▴';
+});
+
 // ===== РЕЖИМ РЕДАКТИРОВАНИЯ НА ГЛАВНОЙ =====
 editModeToggleBtn.addEventListener('click', () => {
     editMode = !editMode;
@@ -183,7 +192,8 @@ editModeToggleBtn.addEventListener('click', () => {
     editModeToggleBtn.classList.toggle('edit-active', editMode);
     editModeLabel.style.display = editMode ? 'block' : 'none';
 
-    tg.showAlert?.(editMode ? 'Режим редактирования включён' : 'Режим редактирования выключен');
+    // Убрали всплывающие окна Telegram,
+    // теперь режим понятен по цвету кнопки и жёлтому тексту.
 });
 
 // Открыть редактор для выбранной карты
@@ -256,7 +266,7 @@ document.getElementById('saveEditBtn').addEventListener('click', () => {
     tg.showAlert?.('Изменения сохранены');
 });
 
-// ===== УДАЛЕНИЕ В РЕДАКТОРЕ (ПОЧИНЕНО) =====
+// ===== УДАЛЕНИЕ В РЕДАКТОРЕ =====
 deleteCardInEditBtn.addEventListener('click', () => {
     if (!editingCardId) {
         tg.showAlert?.('Не выбрана карта для удаления');
@@ -266,7 +276,6 @@ deleteCardInEditBtn.addEventListener('click', () => {
     const confirmDelete = (ok) => {
         if (!ok) return;
 
-        // удаляем карту с id == editingCardId
         cards = cards.filter(c => c.id !== editingCardId);
         editingCardId = null;
 
