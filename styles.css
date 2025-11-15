@@ -41,11 +41,16 @@ body {
     padding: 8px 12px;
     font-size: 18px;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, background 0.2s;
 }
 
 .icon-btn:active {
     opacity: 0.7;
+}
+
+/* Подсветка кнопки режима редактирования */
+.icon-btn.edit-active {
+    background: #ff9800;
 }
 
 .add-card-btn {
@@ -66,6 +71,18 @@ body {
     opacity: 0.8;
 }
 
+/* Пояснение режима редактирования */
+#editModeLabel {
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+    font-size: 13px;
+}
+
+/* ===== СЕТКА КАРТ ===== */
+
 .cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -73,7 +90,7 @@ body {
 }
 
 .card {
-    aspect-ratio: 3.4;
+    aspect-ratio: 2.4;
     border-radius: 12px;
     padding: 12px;
     display: flex;
@@ -95,6 +112,8 @@ body {
     text-align: center;
     word-wrap: break-word;
 }
+
+/* ===== МОДАЛКИ ===== */
 
 .modal {
     display: none;
@@ -137,6 +156,8 @@ body {
     font-size: 14px;
     color: var(--tg-theme-hint-color, #999999);
 }
+
+/* ===== ИНПУТЫ, КНОПКИ, ЦВЕТА ===== */
 
 .input-field {
     width: 100%;
@@ -199,7 +220,14 @@ body {
     width: 100%;
 }
 
-/* ----- Модалка штрихкода ----- */
+/* Кнопка удаления в редакторе */
+.delete-btn-full {
+    margin-top: 12px;
+    background: #f44336;
+    color: #ffffff;
+}
+
+/* ===== МОДАЛКА ШТРИХКОДА ===== */
 
 .card-popup {
     padding: 0;
@@ -207,11 +235,10 @@ body {
     overflow: hidden;
 }
 
-/* Верхняя цветная полоса */
 .card-popup-header {
     position: relative;
     padding: 16px 48px;
-    background: #ff5a5a; /* по умолчанию, переписывается из JS цветом карты */
+    background: #ff5a5a; /* цвет карты подменяется из JS */
     color: #ffffff;
     text-align: center;
 }
@@ -222,23 +249,6 @@ body {
     font-weight: 700;
 }
 
-/* Красивая стрелка "назад" */
-.back-btn {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 6px 10px;
-    border-radius: 999px;
-    border: none;
-    background: rgba(0,0,0,0.25);
-    color: #ffffff;
-    font-size: 18px;
-    line-height: 1;
-    cursor: pointer;
-}
-
-/* Крестик справа */
 .close-view {
     position: absolute;
     right: 16px;
@@ -252,7 +262,6 @@ body {
     cursor: pointer;
 }
 
-/* Белое поле со штрихкодом */
 .card-popup-body {
     background: #ffffff;
     padding: 24px 16px 20px;
@@ -290,6 +299,8 @@ body {
     width: auto;
     margin-top: 4px;
 }
+
+/* ===== ЭКСПОРТ / ИМПОРТ ===== */
 
 .export-textarea {
     width: 100%;
