@@ -10,15 +10,19 @@
 </head>
 <body>
 <div class="container">
+    <!-- Заголовок + кнопка раскрытия панели действий -->
     <div class="header">
         <h1>Мои карты лояльности</h1>
-        <div class="header-buttons">
-            <button class="icon-btn" id="importBtn" title="Импорт">📥</button>
-            <button class="icon-btn" id="exportBtn" title="Экспорт">📤</button>
-            <!-- Кнопка режима редактирования на главной -->
-            <button class="icon-btn" id="editModeToggleBtn" title="Режим редактирования">✏️</button>
-        </div>
+        <button class="icon-btn header-toggle-btn" id="actionsToggleBtn" title="Показать действия">▾</button>
     </div>
+
+    <!-- Сворачиваемый блок с действиями (импорт/экспорт/редактирование) -->
+    <div class="actions-panel hidden" id="actionsPanel">
+        <button class="icon-btn" id="importBtn" title="Импорт">📥</button>
+        <button class="icon-btn" id="exportBtn" title="Экспорт">📤</button>
+        <button class="icon-btn" id="editModeToggleBtn" title="Режим редактирования">✏️</button>
+    </div>
+
 
     <button class="add-card-btn" id="addCardBtn">+ Добавить карту</button>
 
@@ -65,8 +69,6 @@
                     <svg id="barcodeSvg"></svg>
                     <p id="barcodeText"></p>
                 </div>
-
-                <!-- Кнопка копирования номера отключена -->
                 <!-- <button class="btn" id="copyNumberBtn">📋 Скопировать номер</button> -->
             </div>
         </div>
@@ -100,7 +102,6 @@
             <button class="btn delete-btn-full" id="deleteCardInEditBtn">Удалить карту</button>
         </div>
     </div>
-
 
     <!-- Модальное окно экспорта JSON -->
     <div class="modal" id="exportModal">
