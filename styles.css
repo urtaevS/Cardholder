@@ -16,11 +16,12 @@ body {
     padding: 16px;
 }
 
+/* Заголовок + кнопка раскрытия панели */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
 }
 
 .header h1 {
@@ -28,11 +29,31 @@ body {
     font-weight: 600;
 }
 
+.header-toggle-btn {
+    padding-inline: 10px;
+}
+
+/* Сворачиваемый блок действий */
+.actions-panel {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    transition: max-height 0.2s ease, opacity 0.2s ease;
+}
+
+.actions-panel.hidden {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+
 .header-buttons {
     display: flex;
     gap: 8px;
 }
 
+/* Кнопки в панели */
 .icon-btn {
     background: var(--tg-theme-button-color, #3390ec);
     color: var(--tg-theme-button-text-color, #ffffff);
@@ -71,7 +92,7 @@ body {
     opacity: 0.8;
 }
 
-/* Пояснение режима редактирования */
+/* Подпись режима редактирования */
 #editModeLabel {
     margin-bottom: 8px;
     padding: 8px 10px;
@@ -238,7 +259,7 @@ body {
 .card-popup-header {
     position: relative;
     padding: 16px 48px;
-    background: #ff5a5a; /* цвет карты подменяется из JS */
+    background: #ff5a5a;
     color: #ffffff;
     text-align: center;
 }
@@ -271,7 +292,6 @@ body {
     gap: 12px;
 }
 
-/* Контейнер штрихкода */
 .card-back {
     width: 100%;
     border-radius: 12px;
