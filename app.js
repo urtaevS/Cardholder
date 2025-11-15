@@ -8,8 +8,9 @@ const STORAGE_KEY = 'loyaltyCards';
 
 let cards = [];
 let selectedColor = '#FF6B6B';
-let currentCardId = null;
-let editingCardId = null;
+let currentCardId = null;   // карта, которую сейчас смотрим
+let editingCardId = null;   // карта, которую сейчас редактируем
+let editMode = false;       // режим редактирования на главном экране
 
 // ===== DOM =====
 const addCardBtn       = document.getElementById('addCardBtn');
@@ -33,13 +34,23 @@ const importFromJsonBtn    = document.getElementById('importFromJsonBtn');
 const importJsonTextarea   = document.getElementById('importJsonTextarea');
 const applyImportJsonBtn   = document.getElementById('applyImportJsonBtn');
 
-// const copyNumberBtn    = document.getElementById('copyNumberBtn'); // временно не используется
-const editModeBtn      = document.getElementById('editModeBtn');
+const editModeToggleBtn    = document.getElementById('editModeToggleBtn');
+const deleteCardInEditBtn  = document.getElementById('deleteCardInEditBtn');
 
-const backFromViewBtn  = document.getElementById('backFromViewBtn');
-const closeViewBtn     = document.getElementById('closeViewBtn');
-const cardViewBody     = document.getElementById('cardViewBody');
-const cardPopupHeader  = document.getElementById('cardPopupHeader');
+const closeViewBtn         = document.getElementById('closeViewBtn');
+const cardViewBody         = document.getElementById('cardViewBody');
+const cardPopupHeader      = document.getElementById('cardPopupHeader');
+
+// поясняющий лейбл режима редактирования
+let editModeLabel = document.getElementById('editModeLabel');
+if (!editModeLabel) {
+    editModeLabel = document.createElement('div');
+    editModeLabel.id = 'editModeLabel';
+    editModeLabel.style.display = 'none';
+    editModeLabel.textContent = 'Режим редактирования: нажмите на карту, чтобы изменить или удалить её';
+    const container = document.querySelector('.container');
+    container.insertBefore(editModeLabel, cardsGrid);
+}
 
 // ===== LOCALSTORAGE =====
 function loadCards() {
@@ -118,9 +129,19 @@ function renderCards() {
         el.className = 'card';
         el.style.background = card.color;
         el.innerHTML = `<h3>${card.name}</h3>`;
-        el.addEventListener('click', () => viewCard(card.id));
+
+        el.addEventListener('click', () => onCardClick(card.id));
         cardsGrid.appendChild(el);
     });
+}
+
+// ===== КЛИК ПО КАРТЕ =====
+function onCardClick(id) {
+    if (editMode) {
+        openEditForCard(id);
+    } else {
+        viewCard(id);
+    }
 }
 
 // ===== ДОБАВЛЕНИЕ КАРТЫ =====
@@ -155,6 +176,30 @@ saveCardBtn.addEventListener('click', () => {
     tg.showAlert?.('Карта добавлена');
 });
 
+// ===== РЕЖИМ РЕДАКТИРОВАНИЯ НА ГЛАВНОЙ =====
+editModeToggleBtn.addEventListener('click', () => {
+    editMode = !editMode;
+
+    editModeToggleBtn.classList.toggle('edit-active', editMode);
+    editModeLabel.style.display = editMode ? 'block' : 'none';
+
+    tg.showAlert?.(editMode ? 'Режим редактирования включён' : 'Режим редактирования выключен');
+});
+
+// Открыть редактор для выбранной карты
+function openEditForCard(id) {
+    editingCardId = id;
+    const card = cards.find(c => c.id === editingCardId);
+    if (!card) return;
+
+    document.getElementById('editCardName').value = card.name;
+    document.getElementById('editBarcodeNumber').value = card.barcode;
+    selectedColor = card.color;
+    setSelectedColor('editColors', selectedColor);
+
+    openModal(editModal);
+}
+
 // ===== ПРОСМОТР КАРТЫ =====
 function viewCard(id) {
     currentCardId = id;
@@ -179,92 +224,17 @@ function viewCard(id) {
     openModal(viewModal);
 }
 
-// Кнопка "Назад"
-backFromViewBtn.addEventListener('click', () => {
-    closeModal(viewModal);
-});
-
-// Крестик в шапке
+// Крестик в просмотре
 closeViewBtn.addEventListener('click', () => {
     closeModal(viewModal);
 });
 
-// Закрытие по клику на тело модалки (кроме кнопки редактирования)
-cardViewBody.addEventListener('click', (e) => {
-    const target = e.target;
-
-    if (
-        target.id === 'editModeBtn' ||
-        target.closest('#editModeBtn')
-    ) {
-        return;
-    }
-
+// Закрытие по клику на тело модалки просмотра
+cardViewBody.addEventListener('click', () => {
     closeModal(viewModal);
 });
 
-// Кнопка "Режим редактирования" — открывает модалку editModal
-editModeBtn.addEventListener('click', () => {
-    if (!currentCardId) return;
-    editingCardId = currentCardId;
-    const card = cards.find(c => c.id === editingCardId);
-    if (!card) return;
-
-    document.getElementById('editCardName').value = card.name;
-    document.getElementById('editBarcodeNumber').value = card.barcode;
-    selectedColor = card.color;
-    setSelectedColor('editColors', selectedColor);
-
-    closeModal(viewModal);
-    openModal(editModal);
-});
-
-// Логика копирования номера временно отключена
-/*
-copyNumberBtn.addEventListener('click', () => {
-    const code = document.getElementById('barcodeText').textContent.trim();
-    if (!code) {
-        tg.showAlert?.('Номер карты отсутствует');
-        return;
-    }
-
-    let copied = false;
-
-    const tmp = document.createElement('textarea');
-    tmp.value = code;
-    tmp.style.position = 'fixed';
-    tmp.style.left = '-9999px';
-    document.body.appendChild(tmp);
-    tmp.select();
-    tmp.setSelectionRange(0, 999999);
-
-    try {
-        copied = document.execCommand('copy');
-    } catch (e) {
-        copied = false;
-    }
-    document.body.removeChild(tmp);
-
-    if (!copied && navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(code)
-            .then(() => {
-                copied = true;
-                tg.showAlert?.('Номер скопирован');
-            })
-            .catch(() => {
-                tg.showAlert?.('Не удалось скопировать автоматически. Выделите номер вручную.');
-            });
-    } else {
-        if (copied) {
-            tg.showAlert?.('Номер скопирован');
-        } else {
-            tg.showAlert?.('Не удалось скопировать автоматически. Выделите номер вручную.');
-        }
-    }
-});
-*/
-
-// ===== РЕДАКТИРОВАНИЕ КАРТЫ =====
+// ===== СОХРАНЕНИЕ В РЕДАКТОРЕ =====
 document.getElementById('saveEditBtn').addEventListener('click', () => {
     if (!editingCardId) return;
 
@@ -286,18 +256,23 @@ document.getElementById('saveEditBtn').addEventListener('click', () => {
     tg.showAlert?.('Изменения сохранены');
 });
 
-// ===== УДАЛЕНИЕ КАРТЫ =====
-// Удаление по-прежнему через просмотр (глобальная кнопка delete на viewModal)
-// оставляем как было:
-document.getElementById('deleteBtn')?.addEventListener('click', () => {
-    if (!currentCardId) return;
+// ===== УДАЛЕНИЕ В РЕДАКТОРЕ (ПОЧИНЕНО) =====
+deleteCardInEditBtn.addEventListener('click', () => {
+    if (!editingCardId) {
+        tg.showAlert?.('Не выбрана карта для удаления');
+        return;
+    }
 
     const confirmDelete = (ok) => {
         if (!ok) return;
-        cards = cards.filter(c => c.id !== currentCardId);
+
+        // удаляем карту с id == editingCardId
+        cards = cards.filter(c => c.id !== editingCardId);
+        editingCardId = null;
+
         saveCards();
         renderCards();
-        closeModal(viewModal);
+        closeModal(editModal);
         tg.showAlert?.('Карта удалена');
     };
 
