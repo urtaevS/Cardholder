@@ -182,7 +182,16 @@ saveCardBtn.addEventListener('click', () => {
 // ===== СВОРАЧИВАЕМАЯ ПАНЕЛЬ ДЕЙСТВИЙ =====
 actionsToggleBtn.addEventListener('click', () => {
     const hidden = actionsPanel.classList.toggle('hidden');
-    actionsToggleBtn.textContent = hidden ? '▾' : '▴';
+
+    // меняем иконку chevrons-down / chevrons-up
+    const iconEl = actionsToggleBtn.querySelector('[data-lucide]');
+    if (iconEl) {
+        iconEl.setAttribute('data-lucide', hidden ? 'chevrons-down' : 'chevrons-up');
+
+        if (window.lucide?.createIcons) {
+            window.lucide.createIcons({ root: actionsToggleBtn });
+        }
+    }
 
     // Если панель свернули — выходим из режима редактирования
     if (hidden && editMode) {
@@ -451,3 +460,8 @@ setupColorPicker('addColors');
 setupColorPicker('editColors');
 loadCards();
 renderCards();
+
+// Инициализация Lucide-иконок
+if (window.lucide?.createIcons) {
+    window.lucide.createIcons();
+}
