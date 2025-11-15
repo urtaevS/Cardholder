@@ -13,16 +13,23 @@
     <!-- Заголовок + кнопка раскрытия панели действий -->
     <div class="header">
         <h1>Мои карты лояльности</h1>
-        <button class="icon-btn header-toggle-btn" id="actionsToggleBtn" title="Показать действия">▾</button>
+        <button class="icon-btn header-toggle-btn" id="actionsToggleBtn" title="Показать действия">
+            <i data-lucide="chevrons-down"></i>
+        </button>
     </div>
 
     <!-- Сворачиваемый блок с действиями (импорт/экспорт/редактирование) -->
     <div class="actions-panel hidden" id="actionsPanel">
-        <button class="icon-btn" id="importBtn" title="Импорт">📥</button>
-        <button class="icon-btn" id="exportBtn" title="Экспорт">📤</button>
-        <button class="icon-btn" id="editModeToggleBtn" title="Режим редактирования">✏️</button>
+        <button class="icon-btn" id="importBtn" title="Импорт">
+            <i data-lucide="upload"></i>
+        </button>
+        <button class="icon-btn" id="exportBtn" title="Экспорт">
+            <i data-lucide="download"></i>
+        </button>
+        <button class="icon-btn" id="editModeToggleBtn" title="Режим редактирования">
+            <i data-lucide="square-pen"></i>
+        </button>
     </div>
-
 
     <button class="add-card-btn" id="addCardBtn">+ Добавить карту</button>
 
@@ -140,6 +147,8 @@
     <input type="file" id="importInput" accept=".json" style="display:none;">
 </div>
 
+<!-- Lucide icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
 <script src="app.js"></script>
 </body>
 </html>
