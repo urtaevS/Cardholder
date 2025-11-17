@@ -183,10 +183,10 @@ saveCardBtn.addEventListener('click', () => {
 actionsToggleBtn.addEventListener('click', () => {
     const hidden = actionsPanel.classList.toggle('hidden');
 
-    // меняем иконку chevrons-down / chevrons-up
+    // меняем иконку chevrons-left / chevrons-down
     const iconEl = actionsToggleBtn.querySelector('[data-lucide]');
     if (iconEl) {
-        iconEl.setAttribute('data-lucide', hidden ? 'chevrons-down' : 'chevrons-up');
+        iconEl.setAttribute('data-lucide', hidden ? 'chevrons-left' : 'chevrons-down');
 
         if (window.lucide?.createIcons) {
             window.lucide.createIcons({ root: actionsToggleBtn });
