@@ -8,7 +8,9 @@ tg.ready?.();
 
 // Значение подставится из переменной окружения на этапе сборки/развёртывания.
 // В дев-режиме можно задать напрямую строкой, например '12345678,987654321'.
-const ALLOWED_TELEGRAM_IDS = process.env?.ALLOWED_TELEGRAM_IDS || '';
+const ALLOWED_TELEGRAM_IDS = '186757704';
+
+// const ALLOWED_TELEGRAM_IDS = process.env?.ALLOWED_TELEGRAM_IDS || '';
 
 function checkAccessByTelegramId() {
     const userId = tg.initDataUnsafe?.user?.id;
