@@ -3,13 +3,10 @@ const tg = window.Telegram?.WebApp || {};
 tg.expand?.();
 tg.ready?.();
 
-
 // ===== ОГРАНИЧЕНИЕ ПО TELEGRAM ID =====
-
 // Значение подставится из переменной окружения на этапе сборки/развёртывания.
 // В дев-режиме можно задать напрямую строкой, например '12345678,987654321'.
 const ALLOWED_TELEGRAM_IDS = '186757704';
-
 // const ALLOWED_TELEGRAM_IDS = process.env?.ALLOWED_TELEGRAM_IDS || '';
 
 function checkAccessByTelegramId() {
@@ -46,7 +43,9 @@ function checkAccessByTelegramId() {
 function blockApp(message) {
     const container = document.querySelector('.container');
     if (container) {
-        container.innerHTML = `<p style="padding:16px; text-align:center;">${message}</p>`;
+        container.innerHTML = `
+            <p style="padding:16px; text-align:center;">${message}</p>
+        `;
     }
 }
 
@@ -73,6 +72,8 @@ const viewModal        = document.getElementById('viewModal');
 const editModal        = document.getElementById('editModal');
 const exportModal      = document.getElementById('exportModal');
 const importModal      = document.getElementById('importModal');
+// добавлено: модалка помощи
+const helpModal        = document.getElementById('helpModal');
 
 const cardsGrid        = document.getElementById('cardsGrid');
 
@@ -97,6 +98,9 @@ const cardPopupHeader      = document.getElementById('cardPopupHeader');
 
 const actionsPanel         = document.getElementById('actionsPanel');
 const actionsToggleBtn     = document.getElementById('actionsToggleBtn');
+
+// добавлено: кнопка помощи
+const helpBtn              = document.getElementById('helpBtn');
 
 // поясняющий лейбл режима редактирования
 let editModeLabel = document.getElementById('editModeLabel');
@@ -156,6 +160,8 @@ window.addEventListener('click', (e) => {
     if (e.target === editModal) closeModal(editModal);
     if (e.target === exportModal) closeModal(exportModal);
     if (e.target === importModal) closeModal(importModal);
+    // добавлено: закрытие модалки помощи по клику в фон
+    if (e.target === helpModal) closeModal(helpModal);
 });
 
 // ===== ВЫБОР ЦВЕТА =====
@@ -237,11 +243,10 @@ saveCardBtn.addEventListener('click', () => {
 actionsToggleBtn.addEventListener('click', () => {
     const hidden = actionsPanel.classList.toggle('hidden');
 
-    // меняем иконку chevrons-left / chevrons-down
+    // если используешь Lucide-иконку на actionsToggleBtn:
     const iconEl = actionsToggleBtn.querySelector('[data-lucide]');
     if (iconEl) {
-        iconEl.setAttribute('data-lucide', hidden ? 'chevrons-left' : 'chevrons-down');
-
+        iconEl.setAttribute('data-lucide', hidden ? 'chevrons-down' : 'chevrons-up');
         if (window.lucide?.createIcons) {
             window.lucide.createIcons({ root: actionsToggleBtn });
         }
@@ -263,18 +268,11 @@ editModeToggleBtn.addEventListener('click', () => {
     editModeLabel.style.display = editMode ? 'block' : 'none';
 });
 
-// Открыть редактор для выбранной карты
-function openEditForCard(id) {
-    editingCardId = id;
-    const card = cards.find(c => c.id === editingCardId);
-    if (!card) return;
-
-    document.getElementById('editCardName').value = card.name;
-    document.getElementById('editBarcodeNumber').value = card.barcode;
-    selectedColor = card.color;
-    setSelectedColor('editColors', selectedColor);
-
-    openModal(editModal);
+// ===== МОДАЛКА ПОМОЩИ =====
+if (helpBtn && helpModal) {
+    helpBtn.addEventListener('click', () => {
+        openModal(helpModal);
+    });
 }
 
 // ===== ПРОСМОТР КАРТЫ =====
@@ -310,6 +308,20 @@ closeViewBtn.addEventListener('click', () => {
 cardViewBody.addEventListener('click', () => {
     closeModal(viewModal);
 });
+
+// ===== ОТКРЫТИЕ РЕДАКТОРА КАРТЫ =====
+function openEditForCard(id) {
+    editingCardId = id;
+    const card = cards.find(c => c.id === editingCardId);
+    if (!card) return;
+
+    document.getElementById('editCardName').value = card.name;
+    document.getElementById('editBarcodeNumber').value = card.barcode;
+    selectedColor = card.color;
+    setSelectedColor('editColors', selectedColor);
+
+    openModal(editModal);
+}
 
 // ===== СОХРАНЕНИЕ В РЕДАКТОРЕ =====
 document.getElementById('saveEditBtn').addEventListener('click', () => {
@@ -515,7 +527,7 @@ setupColorPicker('editColors');
 loadCards();
 renderCards();
 
-// Инициализация Lucide-иконок
+// Инициализация Lucide-иконок (если подключены в index.html)
 if (window.lucide?.createIcons) {
     window.lucide.createIcons();
 }
