@@ -14,12 +14,15 @@
     <div class="header">
         <h1>Мои карты лояльности</h1>
         <button class="icon-btn header-toggle-btn" id="actionsToggleBtn" title="Показать действия">
-            <i data-lucide="chevrons-left"></i>
+            <i data-lucide="chevrons-down"></i>
         </button>
     </div>
 
-    <!-- Сворачиваемый блок с действиями (импорт/экспорт/редактирование) -->
+    <!-- Сворачиваемый блок с действиями (импорт/экспорт/редактирование/помощь) -->
     <div class="actions-panel hidden" id="actionsPanel">
+        <button class="icon-btn" id="helpBtn" title="Что делают кнопки">
+            <i data-lucide="circle-help"></i>
+        </button>
         <button class="icon-btn" id="importBtn" title="Импорт">
             <i data-lucide="download"></i>
         </button>
@@ -29,6 +32,7 @@
         <button class="icon-btn" id="editModeToggleBtn" title="Режим редактирования">
             <i data-lucide="square-pen"></i>
         </button>
+
     </div>
 
     <button class="add-card-btn" id="addCardBtn">+ Добавить карту</button>
@@ -141,6 +145,19 @@
             <button class="btn btn-primary" id="applyImportJsonBtn" style="display:none;">
                 ✅ Импортировать из JSON
             </button>
+        </div>
+    </div>
+
+    <!-- Модальное окно помощи -->
+    <div class="modal" id="helpModal">
+        <div class="modal-content help-modal">
+            <span class="close" data-target="helpModal">&times;</span>
+            <h2>Что делают кнопки</h2>
+            <div class="help-body">
+                <p>• <strong>Импорт</strong> (стрелка вверх) — загружает карты из JSON файла или вставленного текста.</p>
+                <p>• <strong>Экспорт</strong> (стрелка вниз) — сохраняет все текущие карты в JSON, который можно скопировать.</p>
+                <p>• <strong>Режим редактирования</strong> (карандаш) — включает выбор карт для изменения или удаления.</p>
+            </div>
         </div>
     </div>
 
