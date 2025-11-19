@@ -4,28 +4,22 @@ tg.expand?.();
 tg.ready?.();
 
 // ===== ОГРАНИЧЕНИЕ ПО TELEGRAM ID =====
-// Значение подставится из переменной окружения на этапе сборки/развёртывания.
-// В дев-режиме можно задать напрямую строкой, например '12345678,987654321'.
 const ALLOWED_TELEGRAM_IDS = '186757704';
 // const ALLOWED_TELEGRAM_IDS = process.env?.ALLOWED_TELEGRAM_IDS || '';
 
 function checkAccessByTelegramId() {
     const userId = tg.initDataUnsafe?.user?.id;
 
-    // Если не удалось получить userId — считаем, что доступ запрещён
     if (!userId) {
         blockApp('Нет данных Telegram-пользователя. Доступ запрещён.');
         return false;
     }
 
-    // Строка вида "111,222,333" -> массив ["111","222","333"]
     const allowedList = ALLOWED_TELEGRAM_IDS
         .split(',')
         .map(id => id.trim())
         .filter(Boolean);
 
-    // Если список пустой — можно трактовать как "доступ всем" или "доступ никому".
-    // Здесь считаем, что если список пуст, доступ есть всем.
     if (allowedList.length === 0) {
         return true;
     }
@@ -43,17 +37,12 @@ function checkAccessByTelegramId() {
 function blockApp(message) {
     const container = document.querySelector('.container');
     if (container) {
-        container.innerHTML = `
-            <p style="padding:16px; text-align:center;">${message}</p>
-        `;
+        container.innerHTML = `<p style="padding:16px; text-align:center;">${message}</p>`;
     }
 }
 
-// Выполняем проверку сразу после инициализации Telegram WebApp
 if (!checkAccessByTelegramId()) {
-    // Прерываем дальнейшее выполнение файла, чтобы не инициализировать логику карт
-    // Используем return из глобального контекста через IIFE.
-    (function stopExecution() { return; })();
+    throw new Error('Access denied by Telegram ID');
 }
 
 // ===== СОСТОЯНИЕ =====
@@ -61,9 +50,9 @@ const STORAGE_KEY = 'loyaltyCards';
 
 let cards = [];
 let selectedColor = '#FF6B6B';
-let currentCardId = null;   // карта, которую сейчас смотрим
-let editingCardId = null;   // карта, которую сейчас редактируем
-let editMode = false;       // режим редактирования на главном экране
+let currentCardId = null;
+let editingCardId = null;
+let editMode = false;
 
 // ===== DOM =====
 const addCardBtn       = document.getElementById('addCardBtn');
@@ -72,7 +61,6 @@ const viewModal        = document.getElementById('viewModal');
 const editModal        = document.getElementById('editModal');
 const exportModal      = document.getElementById('exportModal');
 const importModal      = document.getElementById('importModal');
-// добавлено: модалка помощи
 const helpModal        = document.getElementById('helpModal');
 
 const cardsGrid        = document.getElementById('cardsGrid');
@@ -91,6 +79,7 @@ const applyImportJsonBtn   = document.getElementById('applyImportJsonBtn');
 
 const editModeToggleBtn    = document.getElementById('editModeToggleBtn');
 const deleteCardInEditBtn  = document.getElementById('deleteCardInEditBtn');
+const helpBtn              = document.getElementById('helpBtn');
 
 const closeViewBtn         = document.getElementById('closeViewBtn');
 const cardViewBody         = document.getElementById('cardViewBody');
@@ -98,9 +87,6 @@ const cardPopupHeader      = document.getElementById('cardPopupHeader');
 
 const actionsPanel         = document.getElementById('actionsPanel');
 const actionsToggleBtn     = document.getElementById('actionsToggleBtn');
-
-// добавлено: кнопка помощи
-const helpBtn              = document.getElementById('helpBtn');
 
 // поясняющий лейбл режима редактирования
 let editModeLabel = document.getElementById('editModeLabel');
@@ -160,7 +146,6 @@ window.addEventListener('click', (e) => {
     if (e.target === editModal) closeModal(editModal);
     if (e.target === exportModal) closeModal(exportModal);
     if (e.target === importModal) closeModal(importModal);
-    // добавлено: закрытие модалки помощи по клику в фон
     if (e.target === helpModal) closeModal(helpModal);
 });
 
@@ -243,7 +228,6 @@ saveCardBtn.addEventListener('click', () => {
 actionsToggleBtn.addEventListener('click', () => {
     const hidden = actionsPanel.classList.toggle('hidden');
 
-    // если используешь Lucide-иконку на actionsToggleBtn:
     const iconEl = actionsToggleBtn.querySelector('[data-lucide]');
     if (iconEl) {
         iconEl.setAttribute('data-lucide', hidden ? 'chevrons-down' : 'chevrons-up');
@@ -252,7 +236,6 @@ actionsToggleBtn.addEventListener('click', () => {
         }
     }
 
-    // Если панель свернули — выходим из режима редактирования
     if (hidden && editMode) {
         editMode = false;
         editModeToggleBtn.classList.remove('edit-active');
@@ -527,7 +510,7 @@ setupColorPicker('editColors');
 loadCards();
 renderCards();
 
-// Инициализация Lucide-иконок (если подключены в index.html)
+// Инициализация Lucide-иконок
 if (window.lucide?.createIcons) {
     window.lucide.createIcons();
 }
