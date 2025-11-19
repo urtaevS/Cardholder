@@ -3,14 +3,56 @@ const tg = window.Telegram?.WebApp || {};
 tg.expand?.();
 tg.ready?.();
 
+// ===== ОГРАНИЧЕНИЕ ПО TELEGRAM ID =====
+const ALLOWED_TELEGRAM_IDS = '186757704';
+// const ALLOWED_TELEGRAM_IDS = process.env?.ALLOWED_TELEGRAM_IDS || '';
+
+function checkAccessByTelegramId() {
+    const userId = tg.initDataUnsafe?.user?.id;
+
+    if (!userId) {
+        blockApp('Нет данных Telegram-пользователя. Доступ запрещён.');
+        return false;
+    }
+
+    const allowedList = ALLOWED_TELEGRAM_IDS
+        .split(',')
+        .map(id => id.trim())
+        .filter(Boolean);
+
+    if (allowedList.length === 0) {
+        return true;
+    }
+
+    const isAllowed = allowedList.includes(String(userId));
+
+    if (!isAllowed) {
+        blockApp('Доступ к приложению ограничен. Обратитесь к владельцу бота.');
+        return false;
+    }
+
+    return true;
+}
+
+function blockApp(message) {
+    const container = document.querySelector('.container');
+    if (container) {
+        container.innerHTML = `<p style="padding:16px; text-align:center;">${message}</p>`;
+    }
+}
+
+if (!checkAccessByTelegramId()) {
+    throw new Error('Access denied by Telegram ID');
+}
+
 // ===== СОСТОЯНИЕ =====
 const STORAGE_KEY = 'loyaltyCards';
 
 let cards = [];
 let selectedColor = '#FF6B6B';
-let currentCardId = null;   // карта, которую сейчас смотрим
-let editingCardId = null;   // карта, которую сейчас редактируем
-let editMode = false;       // режим редактирования на главном экране
+let currentCardId = null;
+let editingCardId = null;
+let editMode = false;
 
 // ===== DOM =====
 const addCardBtn       = document.getElementById('addCardBtn');
@@ -19,6 +61,7 @@ const viewModal        = document.getElementById('viewModal');
 const editModal        = document.getElementById('editModal');
 const exportModal      = document.getElementById('exportModal');
 const importModal      = document.getElementById('importModal');
+const helpModal        = document.getElementById('helpModal');
 
 const cardsGrid        = document.getElementById('cardsGrid');
 
@@ -36,6 +79,7 @@ const applyImportJsonBtn   = document.getElementById('applyImportJsonBtn');
 
 const editModeToggleBtn    = document.getElementById('editModeToggleBtn');
 const deleteCardInEditBtn  = document.getElementById('deleteCardInEditBtn');
+const helpBtn              = document.getElementById('helpBtn');
 
 const closeViewBtn         = document.getElementById('closeViewBtn');
 const cardViewBody         = document.getElementById('cardViewBody');
@@ -102,6 +146,7 @@ window.addEventListener('click', (e) => {
     if (e.target === editModal) closeModal(editModal);
     if (e.target === exportModal) closeModal(exportModal);
     if (e.target === importModal) closeModal(importModal);
+    if (e.target === helpModal) closeModal(helpModal);
 });
 
 // ===== ВЫБОР ЦВЕТА =====
@@ -183,17 +228,14 @@ saveCardBtn.addEventListener('click', () => {
 actionsToggleBtn.addEventListener('click', () => {
     const hidden = actionsPanel.classList.toggle('hidden');
 
-    // меняем иконку chevrons-left / chevrons-down
     const iconEl = actionsToggleBtn.querySelector('[data-lucide]');
     if (iconEl) {
-        iconEl.setAttribute('data-lucide', hidden ? 'chevrons-left' : 'chevrons-down');
-
+        iconEl.setAttribute('data-lucide', hidden ? 'chevrons-down' : 'chevrons-up');
         if (window.lucide?.createIcons) {
             window.lucide.createIcons({ root: actionsToggleBtn });
         }
     }
 
-    // Если панель свернули — выходим из режима редактирования
     if (hidden && editMode) {
         editMode = false;
         editModeToggleBtn.classList.remove('edit-active');
@@ -209,18 +251,11 @@ editModeToggleBtn.addEventListener('click', () => {
     editModeLabel.style.display = editMode ? 'block' : 'none';
 });
 
-// Открыть редактор для выбранной карты
-function openEditForCard(id) {
-    editingCardId = id;
-    const card = cards.find(c => c.id === editingCardId);
-    if (!card) return;
-
-    document.getElementById('editCardName').value = card.name;
-    document.getElementById('editBarcodeNumber').value = card.barcode;
-    selectedColor = card.color;
-    setSelectedColor('editColors', selectedColor);
-
-    openModal(editModal);
+// ===== МОДАЛКА ПОМОЩИ =====
+if (helpBtn && helpModal) {
+    helpBtn.addEventListener('click', () => {
+        openModal(helpModal);
+    });
 }
 
 // ===== ПРОСМОТР КАРТЫ =====
@@ -256,6 +291,20 @@ closeViewBtn.addEventListener('click', () => {
 cardViewBody.addEventListener('click', () => {
     closeModal(viewModal);
 });
+
+// ===== ОТКРЫТИЕ РЕДАКТОРА КАРТЫ =====
+function openEditForCard(id) {
+    editingCardId = id;
+    const card = cards.find(c => c.id === editingCardId);
+    if (!card) return;
+
+    document.getElementById('editCardName').value = card.name;
+    document.getElementById('editBarcodeNumber').value = card.barcode;
+    selectedColor = card.color;
+    setSelectedColor('editColors', selectedColor);
+
+    openModal(editModal);
+}
 
 // ===== СОХРАНЕНИЕ В РЕДАКТОРЕ =====
 document.getElementById('saveEditBtn').addEventListener('click', () => {
