@@ -36,6 +36,8 @@ body {
 /* Сворачиваемый блок действий */
 .actions-panel {
     display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
     gap: 8px;
     margin-bottom: 16px;
     transition: max-height 0.2s ease, opacity 0.2s ease, margin-bottom 0.2s ease;
@@ -55,9 +57,9 @@ body {
 
 /* Кнопки в панели */
 .icon-btn {
-    background: transparent; /* убираем фон */
-    color: var(--tg-theme-button-color, #3390ec); /* цвет иконки и текста = цвет кнопки темы */
-    border: 2px solid var(--tg-theme-button-color, #3390ec); /* только рамка */
+    background: transparent;
+    color: var(--tg-theme-button-color, #3390ec);
+    border: 1px solid var(--tg-theme-button-color, #3390ec);
     border-radius: 6px;
     padding: 6px 10px;
     font-size: 18px;
@@ -69,21 +71,20 @@ body {
     transition: background 0.15s, color 0.15s, border-color 0.15s, opacity 0.15s;
 }
 
+.icon-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
 .icon-btn:active {
     opacity: 0.7;
 }
 
 /* Подсветка кнопки режима редактирования */
 .icon-btn.edit-active {
-    color: var(--tg-theme-bg-color, #ffffff); /* иконка/текст светлые */
+    color: var(--tg-theme-bg-color, #ffffff);
     background: var(--tg-theme-button-color, #3390ec);
     border-color: var(--tg-theme-button-color, #3390ec);
-}
-
-
-/* Подсветка кнопки режима редактирования */
-.icon-btn.edit-active {
-    background: #ff9800;
 }
 
 .add-card-btn {
@@ -123,7 +124,7 @@ body {
 }
 
 .card {
-    aspect-ratio: 3;
+    aspect-ratio: 2.4;
     border-radius: 12px;
     padding: 12px;
     display: flex;
@@ -331,6 +332,28 @@ body {
 #copyNumberBtn {
     width: auto;
     margin-top: 4px;
+}
+
+/* ===== МОДАЛКА ПОМОЩИ ===== */
+
+.help-modal {
+    max-width: 420px;
+}
+
+.help-body {
+    margin-top: 8px;
+    padding: 16px;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    background: var(--tg-theme-bg-color, #ffffff);
+}
+
+.help-body p {
+    position: relative;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--tg-theme-text-color, #000000);
 }
 
 /* ===== ЭКСПОРТ / ИМПОРТ ===== */
