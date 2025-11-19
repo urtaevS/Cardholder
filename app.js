@@ -3,6 +3,58 @@ const tg = window.Telegram?.WebApp || {};
 tg.expand?.();
 tg.ready?.();
 
+
+// ===== ОГРАНИЧЕНИЕ ПО TELEGRAM ID =====
+
+// Значение подставится из переменной окружения на этапе сборки/развёртывания.
+// В дев-режиме можно задать напрямую строкой, например '12345678,987654321'.
+const ALLOWED_TELEGRAM_IDS = process.env?.ALLOWED_TELEGRAM_IDS || '';
+
+function checkAccessByTelegramId() {
+    const userId = tg.initDataUnsafe?.user?.id;
+
+    // Если не удалось получить userId — считаем, что доступ запрещён
+    if (!userId) {
+        blockApp('Нет данных Telegram-пользователя. Доступ запрещён.');
+        return false;
+    }
+
+    // Строка вида "111,222,333" -> массив ["111","222","333"]
+    const allowedList = ALLOWED_TELEGRAM_IDS
+        .split(',')
+        .map(id => id.trim())
+        .filter(Boolean);
+
+    // Если список пустой — можно трактовать как "доступ всем" или "доступ никому".
+    // Здесь считаем, что если список пуст, доступ есть всем.
+    if (allowedList.length === 0) {
+        return true;
+    }
+
+    const isAllowed = allowedList.includes(String(userId));
+
+    if (!isAllowed) {
+        blockApp('Доступ к приложению ограничен. Обратитесь к владельцу бота.');
+        return false;
+    }
+
+    return true;
+}
+
+function blockApp(message) {
+    const container = document.querySelector('.container');
+    if (container) {
+        container.innerHTML = `<p style="padding:16px; text-align:center;">${message}</p>`;
+    }
+}
+
+// Выполняем проверку сразу после инициализации Telegram WebApp
+if (!checkAccessByTelegramId()) {
+    // Прерываем дальнейшее выполнение файла, чтобы не инициализировать логику карт
+    // Используем return из глобального контекста через IIFE.
+    (function stopExecution() { return; })();
+}
+
 // ===== СОСТОЯНИЕ =====
 const STORAGE_KEY = 'loyaltyCards';
 
