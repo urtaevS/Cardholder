@@ -59,7 +59,7 @@ body {
 .icon-btn {
     background: transparent;
     color: var(--tg-theme-button-color, #3390ec);
-    border: 1px solid var(--tg-theme-button-color, #3390ec);
+    border: 2px solid var(--tg-theme-button-color, #3390ec);
     border-radius: 6px;
     padding: 6px 10px;
     font-size: 18px;
@@ -124,7 +124,7 @@ body {
 }
 
 .card {
-    aspect-ratio: 2.4;
+    aspect-ratio: 4;
     border-radius: 12px;
     padding: 12px;
     display: flex;
