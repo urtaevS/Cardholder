@@ -144,7 +144,7 @@ git clone ...
 
 ```
 
-const ALLOWED_TELEGRAM_IDS = '186757704';
+const ALLOWED_TELEGRAM_IDS = '122765504';
 
 ```
 
