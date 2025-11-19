@@ -57,10 +57,10 @@ body {
 
 /* Кнопки в панели */
 .icon-btn {
-    background: transparent; /* убираем фон */
-    color: var(--tg-theme-button-color, #3390ec); /* цвет иконки и текста */
-    border: 2px solid var(--tg-theme-button-color, #3390ec); /* только рамка */
-    border-radius: 6px; /* лёгкое закругление */
+    background: transparent;
+    color: var(--tg-theme-button-color, #3390ec);
+    border: 2px solid var(--tg-theme-button-color, #3390ec);
+    border-radius: 6px;
     padding: 6px 10px;
     font-size: 18px;
     cursor: pointer;
@@ -272,7 +272,7 @@ body {
 .card-popup-header {
     position: relative;
     padding: 16px 48px;
-    background: #ff5a5a; /* цвет заменяется из JS */
+    background: #ff5a5a;
     color: #ffffff;
     text-align: center;
 }
