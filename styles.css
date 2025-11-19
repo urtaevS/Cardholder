@@ -359,7 +359,7 @@ body {
 .help-body i[data-lucide] svg {
     width: 16px;
     height: 16px;
-    vertical-align: -2px; /* лёгкое выравнивание по тексту */
+    vertical-align: -4px; /* лёгкое выравнивание по тексту */
 }
 
 
