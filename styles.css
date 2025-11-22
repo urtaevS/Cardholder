@@ -136,7 +136,7 @@ body {
 }
 
 .card:active {
-    transform: scale(0.98);
+    transform: scale(1.2);
 }
 
 .card h3 {
