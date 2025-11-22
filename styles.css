@@ -124,7 +124,7 @@ body {
 }
 
 .card {
-    aspect-ratio: 4;
+    aspect-ratio: 1.574;
     border-radius: 12px;
     padding: 12px;
     display: flex;
