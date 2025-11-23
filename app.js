@@ -361,11 +361,28 @@ closeViewBtn.addEventListener('click', () => {
 
 // ===== СВОРАЧИВАНИЕ ПАНЕЛИ =====
 actionsToggleBtn.addEventListener('click', () => {
-  actionsPanel.classList.toggle('hidden');
-  const icon = actionsToggleBtn.querySelector('i');
   const isHidden = actionsPanel.classList.contains('hidden');
-  icon.setAttribute('data-lucide', isHidden ? 'chevron-left' : 'chevron-down');
-  lucide.createIcons();
+  
+  if (isHidden) {
+    // Раскрываем панель
+    actionsPanel.classList.remove('hidden');
+    const icon = actionsToggleBtn.querySelector('i');
+    icon.setAttribute('data-lucide', 'chevron-down');
+    lucide.createIcons();
+  } else {
+    // Сворачиваем панель
+    actionsPanel.classList.add('hidden');
+    const icon = actionsToggleBtn.querySelector('i');
+    icon.setAttribute('data-lucide', 'chevron-left');
+    lucide.createIcons();
+    
+    // Выходим из режима редактирования при сворачивании
+    if (editMode) {
+      editMode = false;
+      editModeToggleBtn.classList.remove('edit-active');
+      editModeLabel.style.display = 'none';
+    }
+  }
 });
 
 // ===== СПРАВКА =====
