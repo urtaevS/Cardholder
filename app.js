@@ -55,7 +55,6 @@ let editingCardId = null;
 let editMode = false;
 
 // ===== DOM =====
-// Объявляем DOM-элементы ровно один раз
 const addCardBtn = document.getElementById('addCardBtn');
 const addModal = document.getElementById('addModal');
 const viewModal = document.getElementById('viewModal');
@@ -82,7 +81,6 @@ const editModeToggleBtn = document.getElementById('editModeToggleBtn');
 const deleteCardInEditBtn = document.getElementById('deleteCardInEditBtn');
 const helpBtn = document.getElementById('helpBtn');
 
-// Новые кнопки облачного бэкапа в модалках — объявляем единожды
 const cloudExportBtn = document.getElementById('cloudExportBtn');
 const cloudImportBtn = document.getElementById('cloudImportBtn');
 
@@ -132,7 +130,6 @@ function saveCards() {
 // ===== ОБЛАЧНЫЙ БЭКАП =====
 function cloudBackupSave(data) {
     console.log('Cloud backup saved:', data);
-    // Здесь можно заменить на реальный вызов API облачного хранилища
     localStorage.setItem(CLOUD_BACKUP_KEY, JSON.stringify(data));
 }
 
@@ -140,14 +137,14 @@ function automaticCloudBackup() {
     cloudBackupSave(cards);
 }
 
-// Переопределяем saveCards для авто бэкапа
+// Переопределяем saveCards для включения автоматического облачного бэкапа
 const originalSaveCards = saveCards;
 saveCards = function () {
     originalSaveCards();
     automaticCloudBackup();
 };
 
-// Обработчики для новых кнопок облака
+// Обработчики для кнопок облачного бэкапа
 if (cloudExportBtn) {
     cloudExportBtn.addEventListener('click', () => {
         cloudBackupSave(cards);
@@ -175,10 +172,47 @@ if (cloudImportBtn) {
     });
 }
 
+// ===== ОБРАБОТЧИК ДЛЯ КНОПКИ ИМПОРТА ИЗ ФАЙЛА =====
+if (importFromFileBtn) {
+    importFromFileBtn.addEventListener('click', () => {
+        importInput.click();
+    });
+}
+
+if (importInput) {
+    importInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const imported = JSON.parse(ev.target.result);
+                if (!Array.isArray(imported)) {
+                    tg.showAlert?.('Неверный формат файла (ожидается массив карт)');
+                    return;
+                }
+
+                // Можно улучшить проверку и слияние с существующими картами
+                cards = cards.concat(imported);
+                saveCards();
+                renderCards();
+                tg.showAlert?.('Импорт выполнен');
+                importModal.style.display = 'none';
+            } catch (err) {
+                tg.showAlert?.('Ошибка чтения файла. Проверьте JSON');
+            }
+        };
+        reader.readAsText(file);
+        importInput.value = '';
+    });
+}
+
 // ===== МОДАЛЫ =====
 function openModal(modal) {
     if (modal) modal.style.display = 'flex';
 }
+
 function closeModal(modal) {
     if (modal) modal.style.display = 'none';
 }
@@ -207,7 +241,9 @@ function setupColorPicker(containerId) {
     container.querySelectorAll('.color-option').forEach((opt) => {
         opt.addEventListener('click', () => {
             selectedColor = opt.dataset.color;
-            container.querySelectorAll('.color-option').forEach((o) => o.classList.remove('selected'));
+            container.querySelectorAll('.color-option').forEach((o) =>
+                o.classList.remove('selected'),
+            );
             opt.classList.add('selected');
         });
     });
@@ -419,7 +455,7 @@ exportBtn.addEventListener('click', () => {
     exportModal.style.display = 'flex';
 });
 
-// ===== Инициализация Lucide-иконок в конце
+// ===== Инициализация Lucide-иконок
 if (window.lucide?.createIcons) {
     window.lucide.createIcons();
 }
