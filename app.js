@@ -364,7 +364,7 @@ actionsToggleBtn.addEventListener('click', () => {
   actionsPanel.classList.toggle('hidden');
   const icon = actionsToggleBtn.querySelector('i');
   const isHidden = actionsPanel.classList.contains('hidden');
-  icon.setAttribute('data-lucide', isHidden ? 'chevron-down' : 'chevron-up');
+  icon.setAttribute('data-lucide', isHidden ? 'chevron-left' : 'chevron-down');
   lucide.createIcons();
 });
 
