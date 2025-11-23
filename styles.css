@@ -365,7 +365,7 @@ body {
 
 /* ===== ЭКСПОРТ / ИМПОРТ ===== */
 
-/* Кнопка облачного хранения 
+/* Кнопка облачного хранения */
 .btn.cloud {
     margin-top: 8px;
     width: 100%;
@@ -379,7 +379,7 @@ body {
     padding: 14px;
     transition: opacity 0.2s;
     box-sizing: border-box;
-} */
+} 
 
 .btn.cloud:active {
     opacity: 0.8;
