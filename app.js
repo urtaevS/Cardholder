@@ -55,6 +55,7 @@ let editingCardId = null;
 let editMode = false;
 
 // ===== DOM =====
+// Объявляем DOM-элементы ровно один раз
 const addCardBtn = document.getElementById('addCardBtn');
 const addModal = document.getElementById('addModal');
 const viewModal = document.getElementById('viewModal');
@@ -81,7 +82,7 @@ const editModeToggleBtn = document.getElementById('editModeToggleBtn');
 const deleteCardInEditBtn = document.getElementById('deleteCardInEditBtn');
 const helpBtn = document.getElementById('helpBtn');
 
-// Новые кнопки облачного бэкапа в модалках
+// Новые кнопки облачного бэкапа в модалках — объявляем единожды
 const cloudExportBtn = document.getElementById('cloudExportBtn');
 const cloudImportBtn = document.getElementById('cloudImportBtn');
 
@@ -131,7 +132,7 @@ function saveCards() {
 // ===== ОБЛАЧНЫЙ БЭКАП =====
 function cloudBackupSave(data) {
     console.log('Cloud backup saved:', data);
-    // Здесь может быть реальный запрос к облаку через fetch/AJAX
+    // Здесь можно заменить на реальный вызов API облачного хранилища
     localStorage.setItem(CLOUD_BACKUP_KEY, JSON.stringify(data));
 }
 
@@ -139,14 +140,14 @@ function automaticCloudBackup() {
     cloudBackupSave(cards);
 }
 
-// Переопределяем saveCards, чтобы вызывать автосохранение в облако
+// Переопределяем saveCards для авто бэкапа
 const originalSaveCards = saveCards;
 saveCards = function () {
     originalSaveCards();
     automaticCloudBackup();
 };
 
-// Обработчик кнопок облачного бэкапа
+// Обработчики для новых кнопок облака
 if (cloudExportBtn) {
     cloudExportBtn.addEventListener('click', () => {
         cloudBackupSave(cards);
@@ -417,61 +418,6 @@ exportBtn.addEventListener('click', () => {
 
     exportModal.style.display = 'flex';
 });
-
-// ===== НОВАЯ КНОПКА «Облачный бэкап» в модалке экспорта
-const cloudExportBtn = document.getElementById('cloudExportBtn');
-if (cloudExportBtn) {
-    cloudExportBtn.addEventListener('click', () => {
-        cloudBackupSave(cards);
-        tg.showAlert?.('Данные сохранены в облако');
-    });
-});
-
-// ===== КНОПКА «Восстановить из облака» в модалке импорта
-const cloudImportBtn = document.getElementById('cloudImportBtn');
-if (cloudImportBtn) {
-    cloudImportBtn.addEventListener('click', () => {
-        const dataStr = localStorage.getItem(CLOUD_BACKUP_KEY);
-        if (!dataStr) {
-            tg.showAlert?.('Облачных данных не найдено');
-            return;
-        }
-        try {
-            const data = JSON.parse(dataStr);
-            if (!Array.isArray(data)) throw new Error('Ошибка формата');
-            cards = data;
-            saveCards();
-            renderCards();
-            tg.showAlert?.('Облачные данные восстановлены');
-            importModal.style.display = 'none';
-        } catch (e) {
-            tg.showAlert?.('Ошибка восстановления из облака');
-        }
-    });
-});
-
-// ===== ОБЛАЧНЫЙ БЭКАП =====
-const CLOUD_BACKUP_KEY = 'cloudBackup';
-
-function cloudBackupSave(data) {
-    console.log('Cloud backup saved:', data);
-    // Здесь можно заменить на реальный вызов API облачного хранилища
-    localStorage.setItem(CLOUD_BACKUP_KEY, JSON.stringify(data));
-}
-
-function automaticCloudBackup() {
-    cloudBackupSave(cards);
-}
-
-// Переопределяем saveCards, чтобы вызвать автосохранение в облако
-const originalSaveCards = saveCards;
-saveCards = function () {
-    originalSaveCards();
-    automaticCloudBackup();
-};
-
-// ===== КОНТРОЛЛЕРЫ ИНТЕРФЕЙСА, ИМПОРТ, ЭКСПОРТ и прочее ...
-// ... остальной код (события, модалки, рендер и т.п.) без изменений
 
 // ===== Инициализация Lucide-иконок в конце
 if (window.lucide?.createIcons) {
