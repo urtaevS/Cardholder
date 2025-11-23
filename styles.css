@@ -379,12 +379,16 @@ body {
     padding: 14px;
     transition: opacity 0.2s;
     box-sizing: border-box;
-}
+} */
 
 .btn.cloud:active {
     opacity: 0.8;
 }
-*/
+
+.btn.cloud {
+    margin-top: 8px;
+}
+
 
 .export-textarea {
     width: 100%;
