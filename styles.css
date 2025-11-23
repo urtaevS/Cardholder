@@ -365,6 +365,10 @@ body {
 
 /* ===== ЭКСПОРТ / ИМПОРТ ===== */
 
+.btn.cloud {
+    margin-top: 8px;
+}
+
 .export-textarea {
     width: 100%;
     min-height: 200px;
