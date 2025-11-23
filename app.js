@@ -338,6 +338,26 @@ applyImportJsonBtn.addEventListener('click', () => {
   }
 });
 
+// ===== СВОРАЧИВАНИЕ ПАНЕЛИ (ПО ПРИМЕРУ) =====
+actionsToggleBtn.addEventListener('click', () => {
+  const hidden = actionsPanel.classList.toggle('hidden');
+
+  const iconEl = actionsToggleBtn.querySelector('[data-lucide]');
+  if (iconEl) {
+    iconEl.setAttribute('data-lucide', hidden ? 'chevron-left' : 'chevron-down');
+    if (window.lucide?.createIcons) {
+      window.lucide.createIcons({ root: actionsToggleBtn });
+    }
+  }
+
+  // При сворачивании выходим из режима редактирования
+  if (hidden && editMode) {
+    editMode = false;
+    editModeToggleBtn.classList.remove('edit-active');
+    editModeLabel.style.display = 'none';
+  }
+});
+
 // ===== РЕЖИМ РЕДАКТИРОВАНИЯ =====
 editModeToggleBtn.addEventListener('click', () => {
   editMode = !editMode;
@@ -357,46 +377,6 @@ document.getElementById('copyNumberBtn').addEventListener('click', () => {
 // ===== ЗАКРЫТИЕ ПРОСМОТРА =====
 closeViewBtn.addEventListener('click', () => {
   closeModal(viewModal);
-});
-
-// ===== СВОРАЧИВАНИЕ ПАНЕЛИ =====
-actionsToggleBtn.addEventListener('click', () => {
-  const isHidden = actionsPanel.classList.contains('hidden');
-  
-  if (isHidden) {
-    // Раскрываем панель
-    actionsPanel.classList.remove('hidden');
-    
-    // Меняем иконку на chevron-down
-    const icon = actionsToggleBtn.querySelector('i');
-    if (icon) {
-      icon.setAttribute('data-lucide', 'chevron-down');
-      // Пересоздаем иконки Lucide
-      if (window.lucide) {
-        window.lucide.createIcons();
-      }
-    }
-  } else {
-    // Сворачиваем панель
-    actionsPanel.classList.add('hidden');
-    
-    // Меняем иконку на chevron-left
-    const icon = actionsToggleBtn.querySelector('i');
-    if (icon) {
-      icon.setAttribute('data-lucide', 'chevron-left');
-      // Пересоздаем иконки Lucide
-      if (window.lucide) {
-        window.lucide.createIcons();
-      }
-    }
-    
-    // Выходим из режима редактирования при сворачивании
-    if (editMode) {
-      editMode = false;
-      editModeToggleBtn.classList.remove('edit-active');
-      editModeLabel.style.display = 'none';
-    }
-  }
 });
 
 // ===== СПРАВКА =====
@@ -493,7 +473,7 @@ setupColorPicker('editColorPicker');
 loadCards();
 renderCards();
 
-// Инициализация иконок Lucide после загрузки DOM
-if (window.lucide) {
+// Инициализация Lucide-иконок
+if (window.lucide?.createIcons) {
   window.lucide.createIcons();
 }
