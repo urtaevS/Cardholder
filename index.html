@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Карты лояльности</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 <div class="container">
-    <!-- Заголовок + кнопка раскрытия панели действий -->
     <div class="header">
         <h1>Мои карты лояльности</h1>
         <button class="icon-btn header-toggle-btn" id="actionsToggleBtn" title="Показать действия">
@@ -18,16 +17,15 @@
         </button>
     </div>
 
-    <!-- Сворачиваемый блок с действиями: помощь / импорт / экспорт / редактирование -->
     <div class="actions-panel hidden" id="actionsPanel">
         <button class="icon-btn" id="helpBtn" title="Что делают кнопки">
             <i data-lucide="circle-help"></i>
         </button>
         <button class="icon-btn" id="importBtn" title="Импорт">
-            <i data-lucide="download"></i>
+            <i data-lucide="upload"></i>
         </button>
         <button class="icon-btn" id="exportBtn" title="Экспорт">
-            <i data-lucide="upload"></i>
+            <i data-lucide="download"></i>
         </button>
         <button class="icon-btn" id="editModeToggleBtn" title="Режим редактирования">
             <i data-lucide="square-pen"></i>
@@ -38,13 +36,13 @@
 
     <div class="cards-grid" id="cardsGrid"></div>
 
-    <!-- Модальное окно добавления карты -->
+    <!-- Add Modal -->
     <div class="modal" id="addModal">
         <div class="modal-content">
             <span class="close" data-target="addModal">&times;</span>
             <h2>Добавить карту</h2>
 
-            <input type="text" id="cardName" placeholder="Название магазина" class="input-field">
+            <input type="text" id="cardName" placeholder="Название магазина" class="input-field" />
 
             <div class="color-picker">
                 <label>Выберите цвет карты:</label>
@@ -60,20 +58,19 @@
                 </div>
             </div>
 
-            <input type="text" id="barcodeNumber" placeholder="Номер штрихкода" class="input-field">
+            <input type="text" id="barcodeNumber" placeholder="Номер штрихкода" class="input-field" />
 
             <button class="btn btn-primary" id="saveCardBtn">Сохранить</button>
         </div>
     </div>
 
-    <!-- Модальное окно просмотра карты -->
+    <!-- View Modal -->
     <div class="modal" id="viewModal">
         <div class="modal-content card-popup" id="viewModalContent">
             <div class="card-popup-header" id="cardPopupHeader">
                 <h2 id="viewCardName"></h2>
                 <button class="close-view" id="closeViewBtn">&times;</button>
             </div>
-
             <div class="card-popup-body" id="cardViewBody">
                 <div class="card-back" id="cardBack">
                     <svg id="barcodeSvg"></svg>
@@ -83,14 +80,13 @@
         </div>
     </div>
 
-    <!-- Модальное окно редактирования карты -->
+    <!-- Edit Modal -->
     <div class="modal" id="editModal">
         <div class="modal-content">
             <span class="close" data-target="editModal">&times;</span>
             <h2>Редактировать карту</h2>
 
-            <input type="text" id="editCardName" placeholder="Название магазина" class="input-field">
-
+            <input type="text" id="editCardName" placeholder="Название магазина" class="input-field" />
             <div class="color-picker">
                 <label>Выберите цвет карты:</label>
                 <div class="colors" id="editColors">
@@ -105,14 +101,14 @@
                 </div>
             </div>
 
-            <input type="text" id="editBarcodeNumber" placeholder="Номер штрихкода" class="input-field">
+            <input type="text" id="editBarcodeNumber" placeholder="Номер штрихкода" class="input-field" />
 
             <button class="btn btn-primary" id="saveEditBtn">Сохранить изменения</button>
             <button class="btn delete-btn-full" id="deleteCardInEditBtn">Удалить карту</button>
         </div>
     </div>
 
-    <!-- Модальное окно экспорта JSON -->
+    <!-- Export Modal -->
     <div class="modal" id="exportModal">
         <div class="modal-content">
             <span class="close" data-target="exportModal">&times;</span>
@@ -120,10 +116,12 @@
             <p>Скопируйте JSON и сохраните его как файл .json (например, в «Избранном» или заметках).</p>
             <textarea id="exportData" class="export-textarea" readonly></textarea>
             <button class="btn btn-primary" id="copyExportBtn">📋 Копировать</button>
+            <!-- Новая кнопка облачный бэкап -->
+            <button class="btn cloud" id="cloudExportBtn">☁️ Облачный бэкап</button>
         </div>
     </div>
 
-    <!-- Модальное окно импорта (файл или JSON) -->
+    <!-- Import Modal -->
     <div class="modal" id="importModal">
         <div class="modal-content">
             <span class="close" data-target="importModal">&times;</span>
@@ -134,19 +132,20 @@
                 <button class="btn" id="importFromFileBtn">📁 Импорт из файла</button>
                 <button class="btn" id="importFromJsonBtn">📋 Вставить JSON</button>
             </div>
+            <button class="btn cloud" id="cloudImportBtn">☁️ Восстановить из облака</button>
+            <textarea
+                id="importJsonTextarea"
+                class="export-textarea"
+                placeholder="Вставьте сюда JSON (Ctrl+V или долгое нажатие → Вставить)..."
+                style="display:none"></textarea>
 
-            <textarea id="importJsonTextarea"
-                      class="export-textarea"
-                      placeholder="Вставьте сюда JSON (Ctrl+V или долгое нажатие → Вставить)..."
-                      style="display:none;"></textarea>
-
-            <button class="btn btn-primary" id="applyImportJsonBtn" style="display:none;">
+            <button class="btn btn-primary" id="applyImportJsonBtn" style="display:none">
                 ✅ Импортировать из JSON
             </button>
         </div>
     </div>
 
-    <!-- Модальное окно помощи -->
+    <!-- Help Modal -->
     <div class="modal" id="helpModal">
         <div class="modal-content help-modal">
             <span class="close" data-target="helpModal">&times;</span>
@@ -154,24 +153,23 @@
             <div class="help-body">
                 <p>
                     • <strong>Импорт</strong>
-                    [<i data-lucide="download"></i>] — загружает карты из JSON файла или вставленного текста.
+                    (<i data-lucide="upload"></i>) — загружает карты из JSON файла или вставленного текста.
                 </p>
                 <p>
                     • <strong>Экспорт</strong>
-                    [<i data-lucide="upload"></i>] — сохраняет все текущие карты в JSON, который можно скопировать.
+                    (<i data-lucide="download"></i>) — сохраняет все текущие карты в JSON, который можно скопировать.
                 </p>
                 <p>
                     • <strong>Режим редактирования</strong>
-                    [<i data-lucide="square-pen"></i>] — включает выбор карт для изменения или удаления.
+                    (<i data-lucide="square-pen"></i>) — включает выбор карт для изменения или удаления.
                 </p>
             </div>
         </div>
     </div>
 
-    <input type="file" id="importInput" accept=".json" style="display:none;">
+    <input type="file" id="importInput" accept=".json" style="display:none" />
 </div>
 
-<!-- Lucide icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="app.js"></script>
 </body>
