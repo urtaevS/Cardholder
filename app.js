@@ -366,15 +366,29 @@ actionsToggleBtn.addEventListener('click', () => {
   if (isHidden) {
     // Раскрываем панель
     actionsPanel.classList.remove('hidden');
+    
+    // Меняем иконку на chevron-down
     const icon = actionsToggleBtn.querySelector('i');
-    icon.setAttribute('data-lucide', 'chevron-down');
-    lucide.createIcons();
+    if (icon) {
+      icon.setAttribute('data-lucide', 'chevron-down');
+      // Пересоздаем иконки Lucide
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    }
   } else {
     // Сворачиваем панель
     actionsPanel.classList.add('hidden');
+    
+    // Меняем иконку на chevron-left
     const icon = actionsToggleBtn.querySelector('i');
-    icon.setAttribute('data-lucide', 'chevron-left');
-    lucide.createIcons();
+    if (icon) {
+      icon.setAttribute('data-lucide', 'chevron-left');
+      // Пересоздаем иконки Lucide
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    }
     
     // Выходим из режима редактирования при сворачивании
     if (editMode) {
@@ -478,4 +492,8 @@ setupColorPicker('colorPicker');
 setupColorPicker('editColorPicker');
 loadCards();
 renderCards();
-lucide.createIcons();
+
+// Инициализация иконок Lucide после загрузки DOM
+if (window.lucide) {
+  window.lucide.createIcons();
+}
