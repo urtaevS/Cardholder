@@ -40,6 +40,7 @@ body {
   justify-content: flex-start;
   gap: 8px;
   margin-bottom: 16px;
+  margin-top: 12px;
   transition: max-height 0.2s ease, opacity 0.2s ease, margin-bottom 0.2s ease;
 }
 
@@ -161,8 +162,6 @@ body {
   }
 }
 
-
-
 /* ===== МОДАЛКИ ===== */
 .modal {
   display: none;
@@ -172,6 +171,7 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: modalBackdropFadeIn 0.3s ease-out;
 }
 
 .modal-content {
@@ -183,6 +183,7 @@ body {
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
+  animation: modalSlideUp 0.4s ease-out;
 }
 
 .close {
@@ -204,6 +205,28 @@ body {
   margin-bottom: 12px;
   font-size: 14px;
   color: var(--tg-theme-hint-color, #999999);
+}
+
+/* Анимация затемнения фона */
+@keyframes modalBackdropFadeIn {
+  0% {
+    background: rgba(0, 0, 0, 0);
+  }
+  100% {
+    background: rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Анимация всплытия модального окна */
+@keyframes modalSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ===== ИНПУТЫ, КНОПКИ, ЦВЕТА ===== */
@@ -293,6 +316,7 @@ body {
   padding: 0;
   border-radius: 16px;
   overflow: hidden;
+  animation: modalSlideUp 0.4s ease-out;
 }
 
 .card-popup-header {
@@ -384,7 +408,7 @@ body {
 .help-body i[data-lucide] svg {
   width: 16px;
   height: 16px;
-  vertical-align: -8px;
+  vertical-align: -3px;
 }
 
 /* ===== ЭКСПОРТ / ИМПОРТ ===== */
