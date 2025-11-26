@@ -177,8 +177,6 @@ function renderCards() {
   });
 }
 
-
-
 // ===== ПРОСМОТР КАРТЫ =====
 function openViewModal(cardId) {
   const card = cards.find(c => c.id === cardId);
@@ -341,7 +339,7 @@ applyImportJsonBtn.addEventListener('click', () => {
   }
 });
 
-// ===== СВОРАЧИВАНИЕ ПАНЕЛИ (ПО ПРИМЕРУ) =====
+// ===== СВОРАЧИВАНИЕ ПАНЕЛИ =====
 actionsToggleBtn.addEventListener('click', () => {
   const hidden = actionsPanel.classList.toggle('hidden');
 
