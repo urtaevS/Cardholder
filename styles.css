@@ -33,12 +33,6 @@ body {
   padding-inline: 10px;
 }
 
-.logo-barcode {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
 /* Сворачиваемый блок действий */
 .actions-panel {
   display: flex;
@@ -123,13 +117,14 @@ body {
 
 /* ===== СЕТКА КАРТ ===== */
 .cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
 .card {
-  aspect-ratio: 3/1;
+  aspect-ratio: 6/1;
+  width: 100%;
   border-radius: 12px;
   padding: 12px;
   display: flex;
@@ -137,11 +132,13 @@ body {
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
+  transition: transform 0.2s ease;
+  animation: cardFadeIn 0.4s ease-out;
+  animation-fill-mode: backwards;
 }
 
 .card:active {
-  transform: scale(1.05);
+  transform: scale(0.98);
 }
 
 .card h3 {
@@ -151,6 +148,20 @@ body {
   text-align: center;
   word-wrap: break-word;
 }
+
+/* Анимация легкого проявления карты */
+@keyframes cardFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-15px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
 
 /* ===== МОДАЛКИ ===== */
 .modal {
