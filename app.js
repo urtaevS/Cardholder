@@ -160,10 +160,11 @@ function setSelectedColor(containerId, color) {
 // ===== ОТРИСОВКА КАРТ =====
 function renderCards() {
   cardsGrid.innerHTML = '';
-  cards.forEach(card => {
+  cards.forEach((card, index) => {
     const el = document.createElement('div');
     el.className = 'card';
     el.style.background = card.color;
+    el.style.animationDelay = `${index * 0.08}s`;
     el.innerHTML = `<h3>${card.name}</h3>`;
     el.addEventListener('click', () => {
       if (editMode) {
@@ -175,6 +176,8 @@ function renderCards() {
     cardsGrid.appendChild(el);
   });
 }
+
+
 
 // ===== ПРОСМОТР КАРТЫ =====
 function openViewModal(cardId) {
