@@ -86,6 +86,50 @@ if (!editModeLabel) {
   container.insertBefore(editModeLabel, cardsGrid);
 }
 
+// ===== ФУНКЦИЯ АНИМАЦИИ ИЗ КНОПКИ =====
+function openModalFromButton(modal, buttonElement) {
+  if (!modal || !buttonElement) {
+    if (modal) modal.style.display = 'flex';
+    return;
+  }
+
+  const modalContent = modal.querySelector('.modal-content');
+  if (!modalContent) {
+    modal.style.display = 'flex';
+    return;
+  }
+
+  // Получаем координаты кнопки
+  const buttonRect = buttonElement.getBoundingClientRect();
+  const buttonCenterX = buttonRect.left + buttonRect.width / 2;
+  const buttonCenterY = buttonRect.top + buttonRect.height / 2;
+
+  // Получаем центр экрана
+  const screenCenterX = window.innerWidth / 2;
+  const screenCenterY = window.innerHeight / 2;
+
+  // Вычисляем смещение
+  const offsetX = buttonCenterX - screenCenterX;
+  const offsetY = buttonCenterY - screenCenterY;
+
+  // Устанавливаем CSS-переменные для анимации
+  modalContent.style.setProperty('--start-x', `${offsetX}px`);
+  modalContent.style.setProperty('--start-y', `${offsetY}px`);
+
+  // Удаляем старый класс анимации и добавляем новый
+  modalContent.classList.remove('animate-from-button');
+  void modalContent.offsetWidth; // Триггер reflow
+  modalContent.classList.add('animate-from-button');
+
+  // Показываем модалку
+  modal.style.display = 'flex';
+
+  // Убираем класс после завершения анимации
+  setTimeout(() => {
+    modalContent.classList.remove('animate-from-button');
+  }, 400);
+}
+
 // ===== LOCALSTORAGE =====
 function loadCards() {
   try {
@@ -166,19 +210,21 @@ function renderCards() {
     el.style.background = card.color;
     el.style.animationDelay = `${index * 0.08}s`;
     el.innerHTML = `<h3>${card.name}</h3>`;
-    el.addEventListener('click', () => {
+    
+    el.addEventListener('click', (e) => {
       if (editMode) {
-        openEditModal(card.id);
+        openEditModalFromCard(card.id, e.currentTarget);
       } else {
-        openViewModal(card.id);
+        openViewModalFromCard(card.id, e.currentTarget);
       }
     });
+    
     cardsGrid.appendChild(el);
   });
 }
 
 // ===== ПРОСМОТР КАРТЫ =====
-function openViewModal(cardId) {
+function openViewModalFromCard(cardId, cardElement) {
   const card = cards.find(c => c.id === cardId);
   if (!card) return;
 
@@ -199,16 +245,16 @@ function openViewModal(cardId) {
   }
 
   document.getElementById('barcodeText').textContent = card.number;
-  openModal(viewModal);
+  openModalFromButton(viewModal, cardElement);
 }
 
 // ===== ДОБАВЛЕНИЕ КАРТЫ =====
-addCardBtn.addEventListener('click', () => {
+addCardBtn.addEventListener('click', (e) => {
   document.getElementById('cardName').value = '';
   document.getElementById('cardNumber').value = '';
   selectedColor = '#FF6B6B';
   setSelectedColor('colorPicker', selectedColor);
-  openModal(addModal);
+  openModalFromButton(addModal, e.currentTarget);
 });
 
 saveCardBtn.addEventListener('click', () => {
@@ -231,7 +277,7 @@ saveCardBtn.addEventListener('click', () => {
 });
 
 // ===== РЕДАКТИРОВАНИЕ КАРТЫ =====
-function openEditModal(cardId) {
+function openEditModalFromCard(cardId, cardElement) {
   const card = cards.find(c => c.id === cardId);
   if (!card) return;
 
@@ -240,7 +286,7 @@ function openEditModal(cardId) {
   document.getElementById('editCardNumber').value = card.number;
   selectedColor = card.color;
   setSelectedColor('editColorPicker', selectedColor);
-  openModal(editModal);
+  openModalFromButton(editModal, cardElement);
 }
 
 document.getElementById('saveEditBtn').addEventListener('click', () => {
@@ -271,10 +317,10 @@ deleteCardInEditBtn.addEventListener('click', () => {
 });
 
 // ===== ЭКСПОРТ =====
-exportBtn.addEventListener('click', () => {
+exportBtn.addEventListener('click', (e) => {
   const json = JSON.stringify(cards, null, 2);
   document.getElementById('exportTextarea').value = json;
-  openModal(exportModal);
+  openModalFromButton(exportModal, e.currentTarget);
 });
 
 copyExportBtn.addEventListener('click', () => {
@@ -285,10 +331,10 @@ copyExportBtn.addEventListener('click', () => {
 });
 
 // ===== ИМПОРТ =====
-importBtn.addEventListener('click', () => {
+importBtn.addEventListener('click', (e) => {
   document.getElementById('importJsonBlock').style.display = 'none';
   importJsonTextarea.value = '';
-  openModal(importModal);
+  openModalFromButton(importModal, e.currentTarget);
 });
 
 importFromFileBtn.addEventListener('click', () => {
@@ -351,7 +397,6 @@ actionsToggleBtn.addEventListener('click', () => {
     }
   }
 
-  // При сворачивании выходим из режима редактирования
   if (hidden && editMode) {
     editMode = false;
     editModeToggleBtn.classList.remove('edit-active');
@@ -381,14 +426,13 @@ closeViewBtn.addEventListener('click', () => {
 });
 
 // ===== СПРАВКА =====
-helpBtn.addEventListener('click', () => {
-  openModal(helpModal);
+helpBtn.addEventListener('click', (e) => {
+  openModalFromButton(helpModal, e.currentTarget);
 });
 
 // ===== TELEGRAM CLOUD STORAGE =====
 const CLOUD_STORAGE_KEY = 'loyaltyCardsBackup';
 
-// Сохранение в облако Telegram
 async function saveToCloud() {
   try {
     if (!tg.CloudStorage) {
@@ -415,7 +459,6 @@ async function saveToCloud() {
   }
 }
 
-// Загрузка из облака Telegram
 async function loadFromCloud() {
   try {
     if (!tg.CloudStorage) {
@@ -456,7 +499,6 @@ async function loadFromCloud() {
   }
 }
 
-// Обработчики для кнопок облака
 const saveToCloudBtn = document.getElementById('saveToCloudBtn');
 const loadFromCloudBtn = document.getElementById('loadFromCloudBtn');
 
@@ -474,7 +516,6 @@ setupColorPicker('editColorPicker');
 loadCards();
 renderCards();
 
-// Инициализация Lucide-иконок
 if (window.lucide?.createIcons) {
   window.lucide.createIcons();
 }
