@@ -130,40 +130,66 @@ body {
   padding: 12px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  /* Добавлено: плавное перемещение */
+  transition: transform 0.2s ease, box-shadow 0.2s ease, top 0.2s ease, left 0.2s ease;
   animation: cardFadeIn 0.4s ease-out;
   animation-fill-mode: backwards;
 }
 
-/* Визуал при перетаскивании */
-.card.dragging {
-  opacity: 0.8;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+/* В режиме редактирования отключаем анимацию появления */
+.card.edit-mode {
+  animation: none;
 }
 
-/* Место, куда тянем карту */
-.card.drag-over {
-  outline: 2px dashed rgba(51, 144, 236, 0.7);
+
+/* Контент карты (текст) */
+.card-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding-right: 8px;
 }
 
-/* Дрожание в режиме редактирования */
-.card.shake {
-  animation: cardShake 0.4s ease-in-out infinite;
-}
-
-.card:active {
-  transform: scale(0.98);
-}
-
-.card h3 {
+.card-content h3 {
   color: #ffffff;
   font-size: 18px;
   font-weight: 600;
   text-align: center;
   word-wrap: break-word;
+}
+
+/* Блок кнопок сортировки справа */
+.card-sort-controls {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-sort-btn {
+  width: 28px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* При режиме редактирования показываем блок сортировки */
+.card.edit-mode .card-sort-controls {
+  display: flex;
+}
+
+.card:active {
+  transform: scale(0.98);
 }
 
 /* Анимация легкого проявления карты */
@@ -176,16 +202,6 @@ body {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-}
-
-/* Анимация дрожания */
-@keyframes cardShake {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(-1px) rotate(-0.5deg); }
-  40% { transform: translateX(1px) rotate(0.5deg); }
-  60% { transform: translateX(-1px) rotate(-0.5deg); }
-  80% { transform: translateX(1px) rotate(0.5deg); }
-  100% { transform: translateX(0); }
 }
 
 /* ===== МОДАЛКИ ===== */
