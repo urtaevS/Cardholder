@@ -183,7 +183,7 @@ body {
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  animation: modalSlideUp 0.4s ease-out;
+  /* Анимация теперь динамическая, добавляется через JS */
 }
 
 .close {
@@ -217,16 +217,21 @@ body {
   }
 }
 
-/* Анимация всплытия модального окна */
-@keyframes modalSlideUp {
+/* Динамическая анимация из кнопки */
+@keyframes modalSlideFromButton {
   0% {
     opacity: 0;
-    transform: translateY(30px) scale(0.95);
+    transform: translate(var(--start-x), var(--start-y)) scale(0.3);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate(0, 0) scale(1);
   }
+}
+
+/* Класс для применения анимации */
+.modal-content.animate-from-button {
+  animation: modalSlideFromButton 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ===== ИНПУТЫ, КНОПКИ, ЦВЕТА ===== */
@@ -316,7 +321,6 @@ body {
   padding: 0;
   border-radius: 16px;
   overflow: hidden;
-  animation: modalSlideUp 0.4s ease-out;
 }
 
 .card-popup-header {
