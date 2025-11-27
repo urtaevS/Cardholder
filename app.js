@@ -49,9 +49,6 @@ let currentCardId = null;
 let editingCardId = null;
 let editMode = false;
 
-// drag&drop
-let dragSrcIndex = null;
-
 // ===== DOM =====
 const addCardBtn = document.getElementById('addCardBtn');
 const addModal = document.getElementById('addModal');
@@ -78,7 +75,6 @@ const cardViewBody = document.getElementById('cardViewBody');
 const cardPopupHeader = document.getElementById('cardPopupHeader');
 const actionsPanel = document.getElementById('actionsPanel');
 const actionsToggleBtn = document.getElementById('actionsToggleBtn');
-// убрали кнопку copyNumberBtn, теперь копируем по клику на текст
 const barcodeTextEl = document.getElementById('barcodeText');
 
 let editModeLabel = document.getElementById('editModeLabel');
@@ -86,7 +82,7 @@ if (!editModeLabel) {
   editModeLabel = document.createElement('div');
   editModeLabel.id = 'editModeLabel';
   editModeLabel.style.display = 'none';
-  editModeLabel.textContent = 'Режим редактирования: нажмите на карту, чтобы изменить или удалить её. Перетащите карту, чтобы изменить порядок.';
+  editModeLabel.textContent = 'Режим редактирования: нажмите на карту для изменения/удаления. Используйте стрелки справа для сортировки.';
   const container = document.querySelector('.container');
   container.insertBefore(editModeLabel, cardsGrid);
 }
@@ -215,16 +211,25 @@ function renderCards() {
     el.className = 'card';
     el.style.background = card.color;
     el.style.animationDelay = `${index * 0.08}s`;
-    el.innerHTML = `<h3>${card.name}</h3>`;
     el.dataset.index = index;
 
-    // drag & drop только в режиме редактирования
-    el.draggable = editMode;
+    el.innerHTML = `
+      <div class="card-content">
+        <h3>${card.name}</h3>
+      </div>
+      <div class="card-sort-controls">
+        <button class="card-sort-btn card-sort-up" data-index="${index}">▲</button>
+        <button class="card-sort-btn card-sort-down" data-index="${index}">▼</button>
+      </div>
+    `;
+
     if (editMode) {
-      el.classList.add('shake');
+      el.classList.add('edit-mode');
     }
 
     el.addEventListener('click', (e) => {
+      if (e.target.classList.contains('card-sort-btn')) return;
+
       if (editMode) {
         openEditModalFromCard(card.id, e.currentTarget);
       } else {
@@ -232,60 +237,34 @@ function renderCards() {
       }
     });
 
-    // DnD события
-    el.addEventListener('dragstart', onCardDragStart);
-    el.addEventListener('dragover', onCardDragOver);
-    el.addEventListener('dragleave', onCardDragLeave);
-    el.addEventListener('drop', onCardDrop);
-    el.addEventListener('dragend', onCardDragEnd);
+    const upBtn = el.querySelector('.card-sort-up');
+    const downBtn = el.querySelector('.card-sort-down');
+
+    upBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = Number(upBtn.dataset.index);
+      moveCard(idx, idx - 1);
+    });
+
+    downBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = Number(downBtn.dataset.index);
+      moveCard(idx, idx + 1);
+    });
 
     cardsGrid.appendChild(el);
   });
 }
 
-// ===== DnD обработчики =====
-function onCardDragStart(e) {
-  if (!editMode) {
-    e.preventDefault();
-    return;
-  }
-  const idx = Number(e.currentTarget.dataset.index);
-  dragSrcIndex = idx;
-  e.currentTarget.classList.add('dragging');
-}
-
-function onCardDragOver(e) {
-  if (!editMode) return;
-  e.preventDefault();
-  e.currentTarget.classList.add('drag-over');
-}
-
-function onCardDragLeave(e) {
-  if (!editMode) return;
-  e.currentTarget.classList.remove('drag-over');
-}
-
-function onCardDrop(e) {
-  if (!editMode) return;
-  e.preventDefault();
-  const targetIndex = Number(e.currentTarget.dataset.index);
-  e.currentTarget.classList.remove('drag-over');
-
-  if (dragSrcIndex === null || dragSrcIndex === targetIndex) return;
-
-  const moved = cards.splice(dragSrcIndex, 1)[0];
-  cards.splice(targetIndex, 0, moved);
-
+// Перемещение карты в массиве
+function moveCard(fromIndex, toIndex) {
+  if (toIndex < 0 || toIndex >= cards.length) return;
+  const [moved] = cards.splice(fromIndex, 1);
+  cards.splice(toIndex, 0, moved);
   saveCards();
-  dragSrcIndex = null;
   renderCards();
 }
 
-function onCardDragEnd(e) {
-  e.currentTarget.classList.remove('dragging');
-  const all = cardsGrid.querySelectorAll('.card');
-  all.forEach(c => c.classList.remove('drag-over'));
-}
 
 // ===== ПРОСМОТР КАРТЫ =====
 function openViewModalFromCard(cardId, cardElement) {
@@ -302,8 +281,8 @@ function openViewModalFromCard(cardId, cardElement) {
   try {
     JsBarcode(svg, card.number, {
       format: 'CODE128',
-      width: 2,
-      height: 80,
+      width: 1,
+      height: 60,
       displayValue: false
     });
   } catch (e) {
@@ -476,11 +455,9 @@ actionsToggleBtn.addEventListener('click', () => {
     editMode = false;
     editModeToggleBtn.classList.remove('edit-active');
     editModeLabel.style.display = 'none';
-    // отключаем дрожание и dnd
     const all = cardsGrid.querySelectorAll('.card');
     all.forEach(c => {
-      c.classList.remove('shake');
-      c.draggable = false;
+      c.classList.remove('edit-mode');
     });
   }
 });
@@ -493,11 +470,10 @@ editModeToggleBtn.addEventListener('click', () => {
 
   const all = cardsGrid.querySelectorAll('.card');
   all.forEach(cardEl => {
-    cardEl.draggable = editMode;
     if (editMode) {
-      cardEl.classList.add('shake');
+      cardEl.classList.add('edit-mode');
     } else {
-      cardEl.classList.remove('shake');
+      cardEl.classList.remove('edit-mode');
     }
   });
 });
