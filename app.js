@@ -49,6 +49,9 @@ let currentCardId = null;
 let editingCardId = null;
 let editMode = false;
 
+// drag&drop
+let dragSrcIndex = null;
+
 // ===== DOM =====
 const addCardBtn = document.getElementById('addCardBtn');
 const addModal = document.getElementById('addModal');
@@ -75,15 +78,62 @@ const cardViewBody = document.getElementById('cardViewBody');
 const cardPopupHeader = document.getElementById('cardPopupHeader');
 const actionsPanel = document.getElementById('actionsPanel');
 const actionsToggleBtn = document.getElementById('actionsToggleBtn');
+// убрали кнопку copyNumberBtn, теперь копируем по клику на текст
+const barcodeTextEl = document.getElementById('barcodeText');
 
 let editModeLabel = document.getElementById('editModeLabel');
 if (!editModeLabel) {
   editModeLabel = document.createElement('div');
   editModeLabel.id = 'editModeLabel';
   editModeLabel.style.display = 'none';
-  editModeLabel.textContent = 'Режим редактирования: нажмите на карту, чтобы изменить или удалить её';
+  editModeLabel.textContent = 'Режим редактирования: нажмите на карту, чтобы изменить или удалить её. Перетащите карту, чтобы изменить порядок.';
   const container = document.querySelector('.container');
   container.insertBefore(editModeLabel, cardsGrid);
+}
+
+// ===== ФУНКЦИЯ АНИМАЦИИ ИЗ КНОПКИ =====
+let isAnimating = false;
+
+function openModalFromButton(modal, buttonElement) {
+  if (isAnimating) return;
+  isAnimating = true;
+
+  if (!modal || !buttonElement) {
+    if (modal) modal.style.display = 'flex';
+    isAnimating = false;
+    return;
+  }
+
+  const modalContent = modal.querySelector('.modal-content');
+  if (!modalContent) {
+    modal.style.display = 'flex';
+    isAnimating = false;
+    return;
+  }
+
+  const buttonRect = buttonElement.getBoundingClientRect();
+  const buttonCenterX = buttonRect.left + buttonRect.width / 2;
+  const buttonCenterY = buttonRect.top + buttonRect.height / 2;
+
+  const screenCenterX = window.innerWidth / 2;
+  const screenCenterY = window.innerHeight / 2;
+
+  const offsetX = buttonCenterX - screenCenterX;
+  const offsetY = buttonCenterY - screenCenterY;
+
+  modalContent.style.setProperty('--start-x', `${offsetX}px`);
+  modalContent.style.setProperty('--start-y', `${offsetY}px`);
+
+  modalContent.classList.remove('animate-from-button');
+  void modalContent.offsetWidth;
+  modalContent.classList.add('animate-from-button');
+
+  modal.style.display = 'flex';
+
+  setTimeout(() => {
+    modalContent.classList.remove('animate-from-button');
+    isAnimating = false;
+  }, 400);
 }
 
 // ===== LOCALSTORAGE =====
@@ -166,21 +216,79 @@ function renderCards() {
     el.style.background = card.color;
     el.style.animationDelay = `${index * 0.08}s`;
     el.innerHTML = `<h3>${card.name}</h3>`;
-    el.addEventListener('click', () => {
+    el.dataset.index = index;
+
+    // drag & drop только в режиме редактирования
+    el.draggable = editMode;
+    if (editMode) {
+      el.classList.add('shake');
+    }
+
+    el.addEventListener('click', (e) => {
       if (editMode) {
-        openEditModal(card.id);
+        openEditModalFromCard(card.id, e.currentTarget);
       } else {
-        openViewModal(card.id);
+        openViewModalFromCard(card.id, e.currentTarget);
       }
     });
+
+    // DnD события
+    el.addEventListener('dragstart', onCardDragStart);
+    el.addEventListener('dragover', onCardDragOver);
+    el.addEventListener('dragleave', onCardDragLeave);
+    el.addEventListener('drop', onCardDrop);
+    el.addEventListener('dragend', onCardDragEnd);
+
     cardsGrid.appendChild(el);
   });
 }
 
+// ===== DnD обработчики =====
+function onCardDragStart(e) {
+  if (!editMode) {
+    e.preventDefault();
+    return;
+  }
+  const idx = Number(e.currentTarget.dataset.index);
+  dragSrcIndex = idx;
+  e.currentTarget.classList.add('dragging');
+}
 
+function onCardDragOver(e) {
+  if (!editMode) return;
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+
+function onCardDragLeave(e) {
+  if (!editMode) return;
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function onCardDrop(e) {
+  if (!editMode) return;
+  e.preventDefault();
+  const targetIndex = Number(e.currentTarget.dataset.index);
+  e.currentTarget.classList.remove('drag-over');
+
+  if (dragSrcIndex === null || dragSrcIndex === targetIndex) return;
+
+  const moved = cards.splice(dragSrcIndex, 1)[0];
+  cards.splice(targetIndex, 0, moved);
+
+  saveCards();
+  dragSrcIndex = null;
+  renderCards();
+}
+
+function onCardDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  const all = cardsGrid.querySelectorAll('.card');
+  all.forEach(c => c.classList.remove('drag-over'));
+}
 
 // ===== ПРОСМОТР КАРТЫ =====
-function openViewModal(cardId) {
+function openViewModalFromCard(cardId, cardElement) {
   const card = cards.find(c => c.id === cardId);
   if (!card) return;
 
@@ -189,6 +297,8 @@ function openViewModal(cardId) {
   cardPopupHeader.style.background = card.color;
 
   const svg = document.getElementById('barcodeSvg');
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+
   try {
     JsBarcode(svg, card.number, {
       format: 'CODE128',
@@ -200,17 +310,26 @@ function openViewModal(cardId) {
     console.error('Barcode error:', e);
   }
 
-  document.getElementById('barcodeText').textContent = card.number;
-  openModal(viewModal);
+  barcodeTextEl.textContent = card.number;
+  openModalFromButton(viewModal, cardElement);
 }
 
+// ===== КОПИРОВАНИЕ НОМЕРА ПО КЛИКУ НА ТЕКСТ =====
+barcodeTextEl.addEventListener('click', () => {
+  const card = cards.find(c => c.id === currentCardId);
+  if (!card) return;
+  navigator.clipboard.writeText(card.number).then(() => {
+    alert('Номер скопирован!');
+  });
+});
+
 // ===== ДОБАВЛЕНИЕ КАРТЫ =====
-addCardBtn.addEventListener('click', () => {
+addCardBtn.addEventListener('click', (e) => {
   document.getElementById('cardName').value = '';
   document.getElementById('cardNumber').value = '';
   selectedColor = '#FF6B6B';
   setSelectedColor('colorPicker', selectedColor);
-  openModal(addModal);
+  openModalFromButton(addModal, e.currentTarget);
 });
 
 saveCardBtn.addEventListener('click', () => {
@@ -233,7 +352,7 @@ saveCardBtn.addEventListener('click', () => {
 });
 
 // ===== РЕДАКТИРОВАНИЕ КАРТЫ =====
-function openEditModal(cardId) {
+function openEditModalFromCard(cardId, cardElement) {
   const card = cards.find(c => c.id === cardId);
   if (!card) return;
 
@@ -242,7 +361,7 @@ function openEditModal(cardId) {
   document.getElementById('editCardNumber').value = card.number;
   selectedColor = card.color;
   setSelectedColor('editColorPicker', selectedColor);
-  openModal(editModal);
+  openModalFromButton(editModal, cardElement);
 }
 
 document.getElementById('saveEditBtn').addEventListener('click', () => {
@@ -273,10 +392,10 @@ deleteCardInEditBtn.addEventListener('click', () => {
 });
 
 // ===== ЭКСПОРТ =====
-exportBtn.addEventListener('click', () => {
+exportBtn.addEventListener('click', (e) => {
   const json = JSON.stringify(cards, null, 2);
   document.getElementById('exportTextarea').value = json;
-  openModal(exportModal);
+  openModalFromButton(exportModal, e.currentTarget);
 });
 
 copyExportBtn.addEventListener('click', () => {
@@ -287,10 +406,10 @@ copyExportBtn.addEventListener('click', () => {
 });
 
 // ===== ИМПОРТ =====
-importBtn.addEventListener('click', () => {
+importBtn.addEventListener('click', (e) => {
   document.getElementById('importJsonBlock').style.display = 'none';
   importJsonTextarea.value = '';
-  openModal(importModal);
+  openModalFromButton(importModal, e.currentTarget);
 });
 
 importFromFileBtn.addEventListener('click', () => {
@@ -341,7 +460,7 @@ applyImportJsonBtn.addEventListener('click', () => {
   }
 });
 
-// ===== СВОРАЧИВАНИЕ ПАНЕЛИ (ПО ПРИМЕРУ) =====
+// ===== СВОРАЧИВАНИЕ ПАНЕЛИ =====
 actionsToggleBtn.addEventListener('click', () => {
   const hidden = actionsPanel.classList.toggle('hidden');
 
@@ -353,11 +472,16 @@ actionsToggleBtn.addEventListener('click', () => {
     }
   }
 
-  // При сворачивании выходим из режима редактирования
   if (hidden && editMode) {
     editMode = false;
     editModeToggleBtn.classList.remove('edit-active');
     editModeLabel.style.display = 'none';
+    // отключаем дрожание и dnd
+    const all = cardsGrid.querySelectorAll('.card');
+    all.forEach(c => {
+      c.classList.remove('shake');
+      c.draggable = false;
+    });
   }
 });
 
@@ -366,14 +490,15 @@ editModeToggleBtn.addEventListener('click', () => {
   editMode = !editMode;
   editModeToggleBtn.classList.toggle('edit-active', editMode);
   editModeLabel.style.display = editMode ? 'block' : 'none';
-});
 
-// ===== КОПИРОВАНИЕ НОМЕРА =====
-document.getElementById('copyNumberBtn').addEventListener('click', () => {
-  const card = cards.find(c => c.id === currentCardId);
-  if (!card) return;
-  navigator.clipboard.writeText(card.number).then(() => {
-    alert('Номер скопирован!');
+  const all = cardsGrid.querySelectorAll('.card');
+  all.forEach(cardEl => {
+    cardEl.draggable = editMode;
+    if (editMode) {
+      cardEl.classList.add('shake');
+    } else {
+      cardEl.classList.remove('shake');
+    }
   });
 });
 
@@ -383,14 +508,13 @@ closeViewBtn.addEventListener('click', () => {
 });
 
 // ===== СПРАВКА =====
-helpBtn.addEventListener('click', () => {
-  openModal(helpModal);
+helpBtn.addEventListener('click', (e) => {
+  openModalFromButton(helpModal, e.currentTarget);
 });
 
 // ===== TELEGRAM CLOUD STORAGE =====
 const CLOUD_STORAGE_KEY = 'loyaltyCardsBackup';
 
-// Сохранение в облако Telegram
 async function saveToCloud() {
   try {
     if (!tg.CloudStorage) {
@@ -417,7 +541,6 @@ async function saveToCloud() {
   }
 }
 
-// Загрузка из облака Telegram
 async function loadFromCloud() {
   try {
     if (!tg.CloudStorage) {
@@ -458,7 +581,6 @@ async function loadFromCloud() {
   }
 }
 
-// Обработчики для кнопок облака
 const saveToCloudBtn = document.getElementById('saveToCloudBtn');
 const loadFromCloudBtn = document.getElementById('loadFromCloudBtn');
 
@@ -476,7 +598,6 @@ setupColorPicker('editColorPicker');
 loadCards();
 renderCards();
 
-// Инициализация Lucide-иконок
 if (window.lucide?.createIcons) {
   window.lucide.createIcons();
 }
