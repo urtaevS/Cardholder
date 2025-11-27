@@ -51,6 +51,7 @@ let editMode = false;
 
 // ===== DOM =====
 const addCardBtn = document.getElementById('addCardBtn');
+const addCardFromPanelBtn = document.getElementById('addCardFromPanelBtn');
 const addModal = document.getElementById('addModal');
 const viewModal = document.getElementById('viewModal');
 const editModal = document.getElementById('editModal');
@@ -71,7 +72,6 @@ const editModeToggleBtn = document.getElementById('editModeToggleBtn');
 const deleteCardInEditBtn = document.getElementById('deleteCardInEditBtn');
 const helpBtn = document.getElementById('helpBtn');
 const closeViewBtn = document.getElementById('closeViewBtn');
-const cardViewBody = document.getElementById('cardViewBody');
 const cardPopupHeader = document.getElementById('cardPopupHeader');
 const actionsPanel = document.getElementById('actionsPanel');
 const actionsToggleBtn = document.getElementById('actionsToggleBtn');
@@ -265,7 +265,6 @@ function moveCard(fromIndex, toIndex) {
   renderCards();
 }
 
-
 // ===== ПРОСМОТР КАРТЫ =====
 function openViewModalFromCard(cardId, cardElement) {
   const card = cards.find(c => c.id === cardId);
@@ -303,13 +302,23 @@ barcodeTextEl.addEventListener('click', () => {
 });
 
 // ===== ДОБАВЛЕНИЕ КАРТЫ =====
-addCardBtn.addEventListener('click', (e) => {
+function openAddCardFromButton(buttonElement) {
   document.getElementById('cardName').value = '';
   document.getElementById('cardNumber').value = '';
   selectedColor = '#FF6B6B';
   setSelectedColor('colorPicker', selectedColor);
-  openModalFromButton(addModal, e.currentTarget);
+  openModalFromButton(addModal, buttonElement);
+}
+
+addCardBtn.addEventListener('click', (e) => {
+  openAddCardFromButton(e.currentTarget);
 });
+
+if (addCardFromPanelBtn) {
+  addCardFromPanelBtn.addEventListener('click', (e) => {
+    openAddCardFromButton(e.currentTarget);
+  });
+}
 
 saveCardBtn.addEventListener('click', () => {
   const name = document.getElementById('cardName').value.trim();
