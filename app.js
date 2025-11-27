@@ -3,7 +3,7 @@ const tg = window.Telegram?.WebApp || {};
 tg.expand?.();
 tg.ready?.();
 
-// ===== ОГРАНИЧЕНИЕ ПО TELEGRAM ID =====
+/* // ===== ОГРАНИЧЕНИЕ ПО TELEGRAM ID =====
 const ALLOWED_TELEGRAM_IDS = '186757704';
 
 function checkAccessByTelegramId() {
@@ -40,7 +40,7 @@ function blockApp(message) {
 if (!checkAccessByTelegramId()) {
   throw new Error('Access denied by Telegram ID');
 }
-
+*/
 // ===== СОСТОЯНИЕ =====
 const STORAGE_KEY = 'loyaltyCards';
 let cards = [];
@@ -87,15 +87,23 @@ if (!editModeLabel) {
 }
 
 // ===== ФУНКЦИЯ АНИМАЦИИ ИЗ КНОПКИ =====
+let isAnimating = false; // Добавляем флаг блокировки
+
 function openModalFromButton(modal, buttonElement) {
+  // Блокируем повторные клики во время анимации
+  if (isAnimating) return;
+  isAnimating = true;
+  
   if (!modal || !buttonElement) {
     if (modal) modal.style.display = 'flex';
+    isAnimating = false; // Сбрасываем флаг
     return;
   }
 
   const modalContent = modal.querySelector('.modal-content');
   if (!modalContent) {
     modal.style.display = 'flex';
+    isAnimating = false; // Сбрасываем флаг
     return;
   }
 
@@ -127,6 +135,7 @@ function openModalFromButton(modal, buttonElement) {
   // Убираем класс после завершения анимации
   setTimeout(() => {
     modalContent.classList.remove('animate-from-button');
+    isAnimating = false; // Разблокируем клики
   }, 400);
 }
 
