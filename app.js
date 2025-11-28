@@ -4,7 +4,7 @@ tg.expand?.();
 tg.ready?.();
 
 // ===== ОГРАНИЧЕНИЕ ПО TELEGRAM ID =====
-const ALLOWED_TELEGRAM_IDS = '186757704';
+const ALLOWED_TELEGRAM_IDS = '';
 
 function checkAccessByTelegramId() {
   const userId = tg.initDataUnsafe?.user?.id;
@@ -280,8 +280,8 @@ function openViewModalFromCard(cardId, cardElement) {
   try {
     JsBarcode(svg, card.number, {
       format: 'CODE128',
-      width: 1,
-      height: 60,
+      width: 2,
+      height: 80,
       displayValue: false
     });
   } catch (e) {
