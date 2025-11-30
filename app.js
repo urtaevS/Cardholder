@@ -2,9 +2,9 @@
 const tg = window.Telegram?.WebApp || {};
 tg.expand?.();
 tg.ready?.();
-
+/*
 // ===== ОГРАНИЧЕНИЕ ПО TELEGRAM ID =====
-const ALLOWED_TELEGRAM_IDS = '';
+const ALLOWED_TELEGRAM_IDS = '186757704';
 
 function checkAccessByTelegramId() {
   const userId = tg.initDataUnsafe?.user?.id;
@@ -40,7 +40,7 @@ function blockApp(message) {
 if (!checkAccessByTelegramId()) {
   throw new Error('Access denied by Telegram ID');
 }
-
+*/
 // ===== СОСТОЯНИЕ =====
 const STORAGE_KEY = 'loyaltyCards';
 let cards = [];
@@ -206,11 +206,20 @@ function setSelectedColor(containerId, color) {
 // ===== ОТРИСОВКА КАРТ =====
 function renderCards() {
   cardsGrid.innerHTML = '';
+
+  const disableAnim = cards.length > 50; // отключаем анимацию появления при длинных списках
+
   cards.forEach((card, index) => {
     const el = document.createElement('div');
     el.className = 'card';
     el.style.background = card.color;
-    el.style.animationDelay = `${index * 0.08}s`;
+
+    if (!disableAnim && !editMode) {
+      el.style.animationDelay = `${index * 0.08}s`;
+    } else {
+      el.style.animation = 'none';
+    }
+
     el.dataset.index = index;
 
     el.innerHTML = `
@@ -280,8 +289,8 @@ function openViewModalFromCard(cardId, cardElement) {
   try {
     JsBarcode(svg, card.number, {
       format: 'CODE128',
-      width: 2,
-      height: 80,
+      width: 1,
+      height: 60,
       displayValue: false
     });
   } catch (e) {
@@ -333,7 +342,8 @@ saveCardBtn.addEventListener('click', () => {
     number,
     color: selectedColor
   };
-  cards.push(newCard);
+  // добавляем новую карту в начало массива → сверху
+  cards.unshift(newCard);
   saveCards();
   renderCards();
   closeModal(addModal);
