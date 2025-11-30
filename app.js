@@ -2,7 +2,7 @@
 const tg = window.Telegram?.WebApp || {};
 tg.expand?.();
 tg.ready?.();
-/*
+
 // ===== ОГРАНИЧЕНИЕ ПО TELEGRAM ID =====
 const ALLOWED_TELEGRAM_IDS = '186757704';
 
@@ -40,7 +40,7 @@ function blockApp(message) {
 if (!checkAccessByTelegramId()) {
   throw new Error('Access denied by Telegram ID');
 }
-*/
+
 // ===== СОСТОЯНИЕ =====
 const STORAGE_KEY = 'loyaltyCards';
 let cards = [];
