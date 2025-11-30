@@ -8,14 +8,14 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background: var(--tg-theme-bg-color, #ffffff);
   color: var(--tg-theme-text-color, #000000);
-  min-height: 100vh; /* прижатие к низу */
+  min-height: 100vh;
 }
 
 .container {
   max-width: 600px;
   margin: 0 auto;
   padding: 16px;
-  display: flex;          /* колоночный layout */
+  display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
@@ -26,11 +26,23 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
-  position: sticky;  /* закрепляем */
+  position: sticky;
   top: 0;
   z-index: 20;
   background: var(--tg-theme-bg-color, #ffffff);
   padding-bottom: 4px;
+}
+
+/* Перекрытие, чтобы не было щели между заголовком и панелью */
+.header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 4px;
+  background: var(--tg-theme-bg-color, #ffffff);
+  z-index: -1;
 }
 
 .header h1 {
@@ -51,8 +63,8 @@ body {
   margin-bottom: 16px;
   margin-top: 12px;
   transition: max-height 0.2s ease, opacity 0.2s ease, margin-bottom 0.2s ease;
-  position: sticky;        /* закрепляем */
-  top: 44px;               /* под заголовком */
+  position: sticky;
+  top: 44px;
   z-index: 19;
   background: var(--tg-theme-bg-color, #ffffff);
   padding-bottom: 4px;
@@ -120,6 +132,11 @@ body {
   opacity: 0.8;
 }
 
+/* Скрыть основную большую кнопку */
+#addCardBtn {
+  display: none;
+}
+
 /* Подпись режима редактирования */
 #editModeLabel {
   margin-bottom: 8px;
@@ -135,7 +152,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: auto; /* прижать список к низу */
+  margin-top: auto;
 }
 
 .card {
