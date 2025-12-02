@@ -6,6 +6,12 @@
   <title>Мои Карты</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Библиотека для генерации штрихкодов (просмотр) -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <!-- Иконки -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Html5-Qrcode для сканирования -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -31,15 +37,21 @@
       <button id="editModeToggleBtn" class="icon-btn" title="Режим редактирования">
         <i data-lucide="edit-3"></i>
       </button>
-      <!-- Дубликат кнопки Добавить карту -->
+      <!-- Кнопка добавления карты в панели -->
       <button id="addCardFromPanelBtn" class="icon-btn" title="Добавить карту">
         <i data-lucide="plus-circle"></i>
       </button>
     </div>
 
+    <!-- Основная кнопка добавления (скрыта стилями, но логика осталась) -->
     <button id="addCardBtn" class="add-card-btn">
       Добавить карту
     </button>
+
+    <!-- Текст уведомления режима редактирования (скрыт через CSS по умолчанию) -->
+    <div id="editModeLabel">
+      Режим редактирования: нажмите на карту для изменения/удаления. Используйте стрелки справа для сортировки.
+    </div>
 
     <div id="cardsGrid" class="cards-grid"></div>
   </div>
@@ -49,30 +61,41 @@
     <div class="modal-content">
       <span class="close" data-target="addModal">&times;</span>
       <h2>Новая карта</h2>
+      
+      <!-- Поле названия -->
       <input
         type="text"
         id="cardName"
         class="input-field"
         placeholder="Название магазина"
       />
-      <input
-        type="text"
-        id="cardNumber"
-        class="input-field"
-        placeholder="Номер карты"
-      />
+
+      <!-- Встроенная кнопка сканирования в поле ввода -->
+      <div class="input-group-embedded">
+        <input
+          type="text"
+          id="cardNumber"
+          class="input-transparent"
+          placeholder="Номер карты / штрихкод"
+        />
+        <button id="scanBarcodeBtn" class="btn-embedded" title="Сканировать штрихкод">
+          <i data-lucide="scan-line"></i>
+        </button>
+      </div>
 
       <div class="color-picker">
         <label>Цвет карты:</label>
         <div id="colorPicker" class="colors">
           <div class="color-option selected" data-color="#FF6B6B" style="background:#FF6B6B;"></div>
-          <div class="color-option" data-color="#4ECDC4" style="background:#4ECDC4;"></div>
+          <div class="color-option" data-color="#33FF5F" style="background:#33FF5F;"></div>
           <div class="color-option" data-color="#45B7D1" style="background:#45B7D1;"></div>
-          <div class="color-option" data-color="#FFA07A" style="background:#FFA07A;"></div>
-          <div class="color-option" data-color="#98D8C8" style="background:#98D8C8;"></div>
+          <div class="color-option" data-color="#FA9625" style="background:#FA9625;"></div>
+          <div class="color-option" data-color="#47FFD1" style="background:#47FFD1;"></div>
           <div class="color-option" data-color="#F7DC6F" style="background:#F7DC6F;"></div>
           <div class="color-option" data-color="#BB8FCE" style="background:#BB8FCE;"></div>
           <div class="color-option" data-color="#85C1E2" style="background:#85C1E2;"></div>
+          <div class="color-option" data-color="#FFCDD2" style="background:#FFCDD2;"></div>
+          <div class="color-option" data-color="#C5E1A5" style="background:#C5E1A5;"></div>
         </div>
       </div>
 
@@ -118,13 +141,15 @@
         <label>Цвет карты:</label>
         <div id="editColorPicker" class="colors">
           <div class="color-option" data-color="#FF6B6B" style="background:#FF6B6B;"></div>
-          <div class="color-option" data-color="#4ECDC4" style="background:#4ECDC4;"></div>
+          <div class="color-option" data-color="#33FF5F" style="background:#33FF5F;"></div>
           <div class="color-option" data-color="#45B7D1" style="background:#45B7D1;"></div>
-          <div class="color-option" data-color="#FFA07A" style="background:#FFA07A;"></div>
-          <div class="color-option" data-color="#98D8C8" style="background:#98D8C8;"></div>
+          <div class="color-option" data-color="#FA9625" style="background:#FA9625;"></div>
+          <div class="color-option" data-color="#47FFD1" style="background:#47FFD1;"></div>
           <div class="color-option" data-color="#F7DC6F" style="background:#F7DC6F;"></div>
           <div class="color-option" data-color="#BB8FCE" style="background:#BB8FCE;"></div>
           <div class="color-option" data-color="#85C1E2" style="background:#85C1E2;"></div>
+          <div class="color-option" data-color="#FFCDD2" style="background:#FFCDD2;"></div>
+          <div class="color-option" data-color="#C5E1A5" style="background:#C5E1A5;"></div>
         </div>
       </div>
 
@@ -190,7 +215,7 @@
       <h2>Справка</h2>
       <div class="help-body">
         <p><strong>Добавление карты:</strong></p>
-        <p><i data-lucide="plus-circle"></i> Нажмите «Добавить карту» или кнопку в панели сверху, введите название и номер, выберите цвет.</p>
+        <p><i data-lucide="plus-circle"></i> Нажмите кнопку в панели сверху, введите название, отсканируйте штрихкод или введите номер, выберите цвет.</p>
 
         <p><strong>Просмотр штрихкода:</strong></p>
         <p><i data-lucide="credit-card"></i> Нажмите на карту, чтобы открыть штрихкод. Коснитесь номера, чтобы скопировать его.</p>
@@ -210,8 +235,25 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Оверлей сканера штрихкода -->
+  <div id="scannerOverlay" class="modal scanner-modal">
+    <div class="modal-content scanner-content">
+      <span class="close" data-target="scannerOverlay">&times;</span>
+      <h2>Сканирование</h2>
+      <div class="scanner-video-wrapper" id="scannerTarget"></div>
+      <p class="scanner-hint">Наведите камеру на штрихкод (EAN-13/Code-128)</p>
+      
+      <div class="scanner-actions">
+        <input type="file" id="scanFileInput" accept="image/*" style="display:none">
+        <!-- Кнопка загрузки фото скрыта по требованию -->
+        <button id="scanFileBtn" class="btn" style="display:none; margin-bottom: 8px; background: #f0f0f0; color: #333;">
+           <i data-lucide="image"></i> Загрузить фото
+        </button>
+        <button id="scannerCancelBtn" class="btn">Отмена</button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
