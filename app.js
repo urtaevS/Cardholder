@@ -52,6 +52,14 @@ let editMode = false;
 // Scanner state
 let html5QrCode = null;
 
+function generateBarcode(cardNumber) {
+  const digits = cardNumber.replace(/[^0-9]/g, '');
+  if (digits.length === 13) {
+    return { format: 'EAN13', text: digits };
+  }
+  return { format: 'CODE128', text: cardNumber };
+}
+
 // ===== DOM =====
 const addCardBtn = document.getElementById('addCardBtn');
 const addCardFromPanelBtn = document.getElementById('addCardFromPanelBtn');
@@ -305,11 +313,15 @@ function openViewModalFromCard(cardId, cardElement) {
   const svg = document.getElementById('barcodeSvg');
   while (svg.firstChild) svg.removeChild(svg.firstChild);
 
+  const barcodeConfig = generateBarcode(card.number);
+  
   try {
-    JsBarcode(svg, card.number, {
-      format: 'CODE128',
-      width: 2,
-      height: 80,
+    JsBarcode(svg, barcodeConfig.text, {
+      format: barcodeConfig.format,
+      width: 2.2,
+      height: 100,
+      margin: 20,
+      quietZone: 20,
       displayValue: false
     });
   } catch (e) {
@@ -319,6 +331,7 @@ function openViewModalFromCard(cardId, cardElement) {
   barcodeTextEl.textContent = card.number;
   openModalFromButton(viewModal, cardElement);
 }
+
 
 barcodeTextEl.addEventListener('click', () => {
   const card = cards.find(c => c.id === currentCardId);
