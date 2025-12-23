@@ -307,7 +307,7 @@ function openViewModalFromCard(cardId, cardElement) {
 
   try {
     JsBarcode(svg, card.number, {
-      format: 'CODE128',
+      format: 'CODE39',
       width: 2,
       height: 80,
       displayValue: false
