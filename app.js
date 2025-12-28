@@ -302,7 +302,7 @@ function moveCard(fromIndex, toIndex) {
 }
 
 // ===== ПРОСМОТР КАРТЫ =====
-function openViewModalFromCard(cardId, cardElement) {
+async function openViewModalFromCard(cardId, cardElement) {
   const card = cards.find(c => c.id === cardId);
   if (!card) return;
 
@@ -312,6 +312,22 @@ function openViewModalFromCard(cardId, cardElement) {
 
   const svg = document.getElementById('barcodeSvg');
   while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+  // Динамическая загрузка JsBarcode
+  if (!window.JsBarcode) {
+    try {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    } catch (err) {
+      alert('Ошибка загрузки генератора штрихкодов');
+      return;
+    }
+  }
 
   const barcodeConfig = generateBarcode(card.number);
   
@@ -331,7 +347,6 @@ function openViewModalFromCard(cardId, cardElement) {
   barcodeTextEl.textContent = card.number;
   openModalFromButton(viewModal, cardElement);
 }
-
 
 barcodeTextEl.addEventListener('click', () => {
   const card = cards.find(c => c.id === currentCardId);
