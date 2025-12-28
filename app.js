@@ -578,9 +578,26 @@ function onScanSuccess(decodedText, decodedResult) {
   saveCardBtn.focus();
 }
 
-function startScanner() {
+async function startScanner() {
   scannerOverlay.style.display = 'flex';
 
+  // Динамическая загрузка библиотеки при первом использовании
+  if (!window.Html5Qrcode) {
+    try {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    } catch (err) {
+      alert('Ошибка загрузки сканера');
+      scannerOverlay.style.display = 'none';
+      return;
+    }
+  }
+  
   // 1. Первый запуск (создаем инстанс)
   if (!html5QrCode) {
     html5QrCode = new Html5Qrcode('scannerTarget');
