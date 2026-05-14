@@ -526,3 +526,67 @@ body {
 #addCardBtn {
   display: none;
 }
+
+/* ===== ДОПОЛНЕНИЯ ДЛЯ ВСТРАИВАНИЯ В IFRAME (HOME ASSISTANT И ДР.) ===== */
+
+/* Компактный режим для небольших окон */
+@media (max-height: 700px) {
+  body {
+    padding: 0;
+  }
+  
+  .container {
+    padding: 8px 16px 4px 16px;
+    min-height: auto;
+  }
+  
+  .header {
+    position: static;
+    margin-bottom: 4px;
+    padding-bottom: 2px;
+  }
+  
+  .header h1 {
+    font-size: 20px;
+  }
+  
+  .actions-panel {
+    top: 0;
+    margin-top: 4px;
+    margin-bottom: 8px;
+  }
+  
+  .cards-grid {
+    gap: 8px;
+  }
+  
+  .card {
+    padding: 8px 12px;
+  }
+  
+  .card-content h3 {
+    font-size: 16px;
+  }
+}
+
+/* Для самых маленьких высот (например, панель в HA) */
+@media (max-height: 550px) {
+  .card-sort-controls {
+    gap: 2px;
+  }
+  
+  .card-sort-btn {
+    width: 24px;
+    height: 20px;
+    font-size: 12px;
+  }
+  
+  .icon-btn {
+    padding: 4px 8px;
+  }
+  
+  .icon-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+}
