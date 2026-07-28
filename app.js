@@ -5,7 +5,7 @@ tg.ready?.();
 
 /*
 // ===== ОГРАНИЧЕНИЕ ПО TELEGRAM ID =====
-const ALLOWED_TELEGRAM_IDS = '186757704';
+const ALLOWED_TELEGRAM_IDS = '';
 
 function checkAccessByTelegramId() {
   const userId = tg.initDataUnsafe?.user?.id;
@@ -51,6 +51,17 @@ let currentCardId = null;
 let editingCardId = null;
 let editMode = false;
 
+// Scanner state
+let html5QrCode = null;
+
+function generateBarcode(cardNumber) {
+  const digits = cardNumber.replace(/[^0-9]/g, '');
+  if (digits.length === 13) {
+    return { format: 'EAN13', text: digits };
+  }
+  return { format: 'CODE128', text: cardNumber };
+}
+
 // ===== DOM =====
 const addCardBtn = document.getElementById('addCardBtn');
 const addCardFromPanelBtn = document.getElementById('addCardFromPanelBtn');
@@ -78,15 +89,27 @@ const cardPopupHeader = document.getElementById('cardPopupHeader');
 const actionsPanel = document.getElementById('actionsPanel');
 const actionsToggleBtn = document.getElementById('actionsToggleBtn');
 const barcodeTextEl = document.getElementById('barcodeText');
+const scanBarcodeBtn = document.getElementById('scanBarcodeBtn');
+const cardNumberInput = document.getElementById('cardNumber');
+
+// Scanner overlay DOM
+const scannerOverlay = document.getElementById('scannerOverlay');
+const scannerCancelBtn = document.getElementById('scannerCancelBtn');
+const scanFileBtn = document.getElementById('scanFileBtn');
+const scanFileInput = document.getElementById('scanFileInput');
 
 let editModeLabel = document.getElementById('editModeLabel');
 if (!editModeLabel) {
   editModeLabel = document.createElement('div');
   editModeLabel.id = 'editModeLabel';
   editModeLabel.style.display = 'none';
-  editModeLabel.textContent = 'Режим редактирования: нажмите на карту для изменения/удаления. Используйте стрелки справа для сортировки.';
   const container = document.querySelector('.container');
   container.insertBefore(editModeLabel, cardsGrid);
+}
+
+if (!editModeLabel.textContent.trim()) {
+  editModeLabel.textContent =
+    'Режим редактирования: нажмите на карту для изменения/удаления. Используйте стрелки справа для сортировки.';
 }
 
 // ===== ФУНКЦИЯ АНИМАЦИИ ИЗ КНОПКИ =====
@@ -173,6 +196,10 @@ document.querySelectorAll('.close').forEach(btn => {
     if (!id) return;
     const modal = document.getElementById(id);
     closeModal(modal);
+    // ИЗМЕНЕНИЕ: При закрытии оверлея сканера ставим на ПАУЗУ, а не стоп
+    if (id === 'scannerOverlay') {
+      pauseScanner();
+    }
   });
 });
 
@@ -183,6 +210,7 @@ window.addEventListener('click', (e) => {
   if (e.target === exportModal) closeModal(exportModal);
   if (e.target === importModal) closeModal(importModal);
   if (e.target === helpModal) closeModal(helpModal);
+  if (e.target === scannerOverlay) pauseScanner(); // Пауза при клике вне
 });
 
 // ===== ВЫБОР ЦВЕТА =====
@@ -209,7 +237,7 @@ function setSelectedColor(containerId, color) {
 function renderCards() {
   cardsGrid.innerHTML = '';
 
-  const disableAnim = cards.length > 50; // отключаем анимацию появления при длинных списках
+  const disableAnim = cards.length > 50; 
 
   cards.forEach((card, index) => {
     const el = document.createElement('div');
@@ -267,7 +295,6 @@ function renderCards() {
   });
 }
 
-// Перемещение карты в массиве
 function moveCard(fromIndex, toIndex) {
   if (toIndex < 0 || toIndex >= cards.length) return;
   const [moved] = cards.splice(fromIndex, 1);
@@ -277,7 +304,7 @@ function moveCard(fromIndex, toIndex) {
 }
 
 // ===== ПРОСМОТР КАРТЫ =====
-function openViewModalFromCard(cardId, cardElement) {
+async function openViewModalFromCard(cardId, cardElement) {
   const card = cards.find(c => c.id === cardId);
   if (!card) return;
 
@@ -288,11 +315,31 @@ function openViewModalFromCard(cardId, cardElement) {
   const svg = document.getElementById('barcodeSvg');
   while (svg.firstChild) svg.removeChild(svg.firstChild);
 
+  // Динамическая загрузка JsBarcode
+  if (!window.JsBarcode) {
+    try {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    } catch (err) {
+      alert('Ошибка загрузки генератора штрихкодов');
+      return;
+    }
+  }
+
+  const barcodeConfig = generateBarcode(card.number);
+  
   try {
-    JsBarcode(svg, card.number, {
-      format: 'CODE128',
-      width: 2,
-      height: 80,
+    JsBarcode(svg, barcodeConfig.text, {
+      format: barcodeConfig.format,
+      width: 2.2,
+      height: 100,
+      margin: 20,
+      quietZone: 20,
       displayValue: false
     });
   } catch (e) {
@@ -303,7 +350,6 @@ function openViewModalFromCard(cardId, cardElement) {
   openModalFromButton(viewModal, cardElement);
 }
 
-// ===== КОПИРОВАНИЕ НОМЕРА ПО КЛИКУ НА ТЕКСТ =====
 barcodeTextEl.addEventListener('click', () => {
   const card = cards.find(c => c.id === currentCardId);
   if (!card) return;
@@ -344,7 +390,6 @@ saveCardBtn.addEventListener('click', () => {
     number,
     color: selectedColor
   };
-  // добавляем новую карту в начало массива → сверху
   cards.unshift(newCard);
   saveCards();
   renderCards();
@@ -509,6 +554,153 @@ helpBtn.addEventListener('click', (e) => {
   openModalFromButton(helpModal, e.currentTarget);
 });
 
+// ===== HTML5-QRCODE SCANNER =====
+
+function isValidBarcode(text) {
+  if (!text || text.length < 3) return false;
+  return true;
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+  if (!isValidBarcode(decodedText)) {
+    console.warn('Пропущен некорректный код:', decodedText);
+    return;
+  }
+
+  try { if (navigator.vibrate) navigator.vibrate(200); } catch(e){}
+
+  // При успехе: Скрываем, ставим на паузу (не STOP!), вставляем текст
+  scannerOverlay.style.display = 'none';
+  
+  if (html5QrCode) {
+    try { html5QrCode.pause(true); } catch(e){}
+  }
+
+  cardNumberInput.value = decodedText;
+  saveCardBtn.focus();
+}
+
+async function startScanner() {
+  scannerOverlay.style.display = 'flex';
+
+  // Динамическая загрузка библиотеки при первом использовании
+  if (!window.Html5Qrcode) {
+    try {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    } catch (err) {
+      alert('Ошибка загрузки сканера');
+      scannerOverlay.style.display = 'none';
+      return;
+    }
+  }
+  
+  // 1. Первый запуск (создаем инстанс)
+  if (!html5QrCode) {
+    html5QrCode = new Html5Qrcode('scannerTarget');
+    launchCamera();
+    return;
+  }
+
+  // 2. Если уже есть - пробуем RESUME
+  try {
+    html5QrCode.resume(); 
+  } catch (err) {
+    // Если resume не прошел (например, не был на паузе или был остановлен)
+    // и если он СЕЙЧАС не сканирует - запускаем заново
+    if (!html5QrCode.isScanning) {
+      launchCamera();
+    }
+  }
+}
+
+function launchCamera() {
+  const config = {
+    fps: 10,
+    qrbox: { width: 250, height: 150 },
+    aspectRatio: 1.0
+  };
+
+  html5QrCode.start(
+    { facingMode: "environment" }, 
+    config, 
+    onScanSuccess,
+    (errorMessage) => { /* ignore */ }
+  ).catch(err => {
+    console.error('Ошибка запуска камеры:', err);
+    // Если ошибка "already scanning", просто игнорируем
+    if (err?.indexOf && err.indexOf("already") !== -1) return;
+    
+    alert('Ошибка запуска камеры: ' + err);
+    scannerOverlay.style.display = 'none';
+  });
+}
+
+// Вместо stopScanner используем pauseScanner для кнопки "Отмена"
+function pauseScanner() {
+  scannerOverlay.style.display = 'none';
+  if (html5QrCode) {
+    try {
+      html5QrCode.pause(true);
+    } catch (e) {
+      console.log('Pause failed or not needed', e);
+    }
+  }
+}
+
+// Логика загрузки файла изображения
+if (scanFileBtn && scanFileInput) {
+  scanFileBtn.addEventListener('click', () => {
+    scanFileInput.click();
+  });
+
+  scanFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Файл слишком большой (максимум 5MB)');
+      scanFileInput.value = '';
+      return;
+    }
+
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode('scannerTarget');
+    }
+
+    html5QrCode
+      .scanFile(file, true)
+      .then((decodedText) => {
+        onScanSuccess(decodedText);
+      })
+      .catch((err) => {
+        console.error('Error scanning file:', err);
+        alert('Не удалось распознать штрихкод на изображении. Попробуйте другое фото.');
+      });
+  });
+}
+
+// Кнопки управления сканером
+if (scanBarcodeBtn) {
+  scanBarcodeBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    startScanner();
+  });
+}
+
+if (scannerCancelBtn) {
+  scannerCancelBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    // Нажимаем "Отмена" -> ставим на паузу
+    pauseScanner();
+  });
+}
+
 // ===== TELEGRAM CLOUD STORAGE =====
 const CLOUD_STORAGE_KEY = 'loyaltyCardsBackup';
 
@@ -518,9 +710,9 @@ async function saveToCloud() {
       alert('Cloud Storage недоступен в вашей версии Telegram');
       return;
     }
-    
+
     const data = JSON.stringify(cards);
-    
+
     await new Promise((resolve, reject) => {
       tg.CloudStorage.setItem(CLOUD_STORAGE_KEY, data, (error) => {
         if (error) {
@@ -530,7 +722,7 @@ async function saveToCloud() {
         }
       });
     });
-    
+
     alert('✅ Данные успешно сохранены в облако Telegram');
   } catch (error) {
     console.error('Ошибка сохранения в облако:', error);
@@ -544,7 +736,7 @@ async function loadFromCloud() {
       alert('Cloud Storage недоступен в вашей версии Telegram');
       return;
     }
-    
+
     const data = await new Promise((resolve, reject) => {
       tg.CloudStorage.getItem(CLOUD_STORAGE_KEY, (error, value) => {
         if (error) {
@@ -554,17 +746,17 @@ async function loadFromCloud() {
         }
       });
     });
-    
+
     if (!data) {
       alert('⚠️ В облаке нет сохраненных данных');
       return;
     }
-    
+
     const parsed = JSON.parse(data);
     if (!Array.isArray(parsed)) {
       throw new Error('Неверный формат данных');
     }
-    
+
     if (confirm(`Найдено карт в облаке: ${parsed.length}. Загрузить и заменить текущие данные?`)) {
       cards = parsed;
       saveCards();
@@ -597,4 +789,13 @@ renderCards();
 
 if (window.lucide?.createIcons) {
   window.lucide.createIcons();
+}
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('SW registered'))
+      .catch(err => console.log('SW error:', err));
+  });
 }
