@@ -65,7 +65,7 @@ Telegram Mini App для хранения и управления картами
 1. Разместите файлы на веб-сервере с HTTPS
 2. Создайте бота через [@BotFather](https://t.me/botfather)
 3. Настройте Web App URL в настройках бота
-4. Опционально: настройте ALLOWED_TELEGRAM_IDS в app-1.js
+4. Опционально: настройте ALLOWED_TELEGRAM_IDS в app.js
 
 ### Системные требования
 - Telegram для iOS/Android/Desktop
