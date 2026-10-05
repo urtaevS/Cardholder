@@ -1,12 +1,14 @@
 // Версию кэша нужно поднимать при каждом деплое: fetch-хендлер работает
 // по схеме cache-first, поэтому без бампа пользователи продолжают получать
-// старые index.html/app.js/styles.css из кэша.
-const CACHE_NAME = 'cardholder-v2';
+// старые index.html/app.js/styles.css из кэша. v3 — иконки перенесены
+// с CDN на локальный vendor/lucide-icons.js.
+const CACHE_NAME = 'cardholder-v3';
 const staticFiles = [
   '/',
   '/index.html',
   '/app.js',
   '/styles.css',
+  '/vendor/lucide-icons.js',
   'https://telegram.org/js/telegram-web-app.js'
 ];
 

@@ -429,7 +429,9 @@ body {
   opacity: 0.8;
 }
 
-.btn i[data-lucide] {
+/* lucide заменяет <i data-lucide> на <svg class="lucide">,
+   поэтому селектор должен быть svg.lucide, а не i[data-lucide] */
+.btn svg.lucide {
   width: 18px;
   height: 18px;
 }
@@ -527,7 +529,7 @@ body {
   color: var(--tg-theme-text-color, #000000);
 }
 
-.help-body i[data-lucide] svg {
+.help-body svg.lucide {
   width: 16px;
   height: 16px;
   vertical-align: -3px;
@@ -568,8 +570,8 @@ body {
   gap: 8px;
 }
 
-#saveToCloudBtn i[data-lucide],
-#loadFromCloudBtn i[data-lucide] {
+#saveToCloudBtn svg.lucide,
+#loadFromCloudBtn svg.lucide {
   width: 18px;
   height: 18px;
 }

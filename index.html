@@ -10,10 +10,11 @@
   <link rel="stylesheet" href="styles.css" />
   <!-- Telegram WebApp API. defer — не блокирует отрисовку страницы -->
   <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
-  <!-- Иконки Lucide. ВАЖНО: версия зафиксирована (без @latest, иначе лишний
-       редирект) и CDN — jsdelivr, а не unpkg: unpkg.com заблокирован у ряда
-       провайдеров, из-за чего скрипт висит и не отдаёт window.lucide -->
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js" defer></script>
+  <!-- Иконки Lucide — ЛОКАЛЬНЫЙ файл (vendor/lucide-icons.js).
+     Раньше тут был CDN (unpkg/jsdelivr): из-за него приложение зависало при
+     загрузке, а иконки не отображались. Теперь иконки не зависят от сети
+     и работают офлайн. defer — не блокирует отрисовку страницы. -->
+  <script src="vendor/lucide-icons.js" defer></script>
   <!-- Тяжёлые библиотеки НЕ подключаем здесь — они грузятся лениво из app.js
        при первом использовании:
        • JsBarcode    (cdn.jsdelivr.net) — генерация штрихкода при открытии карты
