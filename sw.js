@@ -1,4 +1,7 @@
-const CACHE_NAME = 'cardholder-v1';
+// Версию кэша нужно поднимать при каждом деплое: fetch-хендлер работает
+// по схеме cache-first, поэтому без бампа пользователи продолжают получать
+// старые index.html/app.js/styles.css из кэша.
+const CACHE_NAME = 'cardholder-v2';
 const staticFiles = [
   '/',
   '/index.html',

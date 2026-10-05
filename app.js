@@ -588,7 +588,7 @@ async function startScanner() {
     try {
       await new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+        script.src = 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
         script.onload = resolve;
         script.onerror = reject;
         document.head.appendChild(script);
